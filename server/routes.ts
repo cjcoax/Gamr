@@ -26,6 +26,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User search route
+  app.get("/api/users/search", async (req, res) => {
+    try {
+      const query = req.query.q as string;
+      if (!query) {
+        return res.status(400).json({ message: "Search query is required" });
+      }
+      const limit = parseInt(req.query.limit as string) || 20;
+      const users = await storage.searchUsers(query, limit);
+      res.json(users);
+    } catch (error) {
+      console.error("Error searching users:", error);
+      res.status(500).json({ message: "Failed to search users" });
+    }
+  });
+
   // User profile routes
   app.patch("/api/users/profile", isAuthenticated, async (req: any, res) => {
     try {

@@ -35,6 +35,7 @@ export interface IStorage {
   upsertUser(user: UpsertUser): Promise<User>;
   getUserWithStats(id: string): Promise<UserWithStats | undefined>;
   updateUserProfile(id: string, data: Partial<User>): Promise<User>;
+  searchUsers(query: string, limit?: number): Promise<User[]>;
 
   // Game operations
   getAllGames(limit?: number, offset?: number): Promise<Game[]>;
@@ -150,6 +151,22 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, id))
       .returning();
     return user;
+  }
+
+  async searchUsers(query: string, limit = 20): Promise<User[]> {
+    return db
+      .select()
+      .from(users)
+      .where(
+        or(
+          ilike(users.firstName, `%${query}%`),
+          ilike(users.lastName, `%${query}%`),
+          ilike(users.username, `%${query}%`),
+          ilike(users.email, `%${query}%`)
+        )
+      )
+      .limit(limit)
+      .orderBy(desc(users.createdAt));
   }
 
   // Game operations
