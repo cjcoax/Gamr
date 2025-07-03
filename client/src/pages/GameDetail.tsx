@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Star, Plus, Edit, Upload, Image, Calendar, Users, MessageSquare } from "lucide-react";
+import { ArrowLeft, Star, Plus, Edit, Upload, Image, Calendar, Users, MessageSquare, Camera } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -588,6 +588,19 @@ export default function GameDetail() {
               </TabsContent>
               
               <TabsContent value="media" className="space-y-4 mt-4">
+                {/* Add Photo Button - Only show if user is authenticated */}
+                {user && (
+                  <div className="flex justify-center">
+                    <Button
+                      variant="outline"
+                      className="bg-gaming-purple hover:bg-gaming-violet text-white border-gaming-purple"
+                    >
+                      <Camera className="w-4 h-4 mr-2" />
+                      Add photo
+                    </Button>
+                  </div>
+                )}
+
                 <Card className="bg-gaming-card border-slate-700">
                   <CardContent className="p-4">
                     <h3 className="text-sm font-medium text-slate-400 mb-3">User-Uploaded Media</h3>

@@ -34,6 +34,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         username: z.string().optional(),
         bio: z.string().optional(),
         profileImageUrl: z.string().url().optional(),
+        steamUsername: z.string().optional(),
+        epicUsername: z.string().optional(),
+        battlenetUsername: z.string().optional(),
+        psnUsername: z.string().optional(),
+        xboxUsername: z.string().optional(),
+        nintendoUsername: z.string().optional(),
+        eaUsername: z.string().optional(),
+        discordUsername: z.string().optional(),
       }).parse(req.body);
 
       const user = await storage.updateUserProfile(userId, updateData);

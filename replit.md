@@ -116,6 +116,9 @@ Changelog:
 - July 03, 2025. Resolved TypeScript errors in GameDetail component causing crashes with proper type guards
 - July 03, 2025. Made Edit Profile dialog scrollable and fixed form submission to include all gaming platform usernames
 - July 03, 2025. Complete Skyrim prototype now working - game detail page loads consistently from home and search
+- July 03, 2025. Fixed gaming platform usernames not displaying on profile - updated API route to accept gaming platform fields
+- July 03, 2025. Added Favorite Games module to profile page with four slots for top games
+- July 03, 2025. Added "Add photo" button to User Media tab on game detail pages
 ```
 
 ## User Preferences
