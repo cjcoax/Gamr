@@ -9,6 +9,7 @@ import {
   integer,
   real,
   boolean,
+  unique,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
@@ -125,6 +126,14 @@ export const gamePosts = pgTable("game_posts", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const favoriteGames = pgTable("favorite_games", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  gameId: integer("game_id").notNull().references(() => games.id, { onDelete: "cascade" }),
+  position: integer("position").notNull(), // 1-4 for the 4 slots
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   userGames: many(userGames),
@@ -198,6 +207,17 @@ export const gamePostsRelations = relations(gamePosts, ({ one }) => ({
   }),
 }));
 
+export const favoriteGamesRelations = relations(favoriteGames, ({ one }) => ({
+  user: one(users, {
+    fields: [favoriteGames.userId],
+    references: [users.id],
+  }),
+  game: one(games, {
+    fields: [favoriteGames.gameId],
+    references: [games.id],
+  }),
+}));
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   createdAt: true,
@@ -236,6 +256,11 @@ export const insertGamePostSchema = createInsertSchema(gamePosts).omit({
   createdAt: true,
 });
 
+export const insertFavoriteGameSchema = createInsertSchema(favoriteGames).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -251,6 +276,8 @@ export type UserFollow = typeof userFollows.$inferSelect;
 export type InsertUserFollow = z.infer<typeof insertUserFollowSchema>;
 export type GamePost = typeof gamePosts.$inferSelect;
 export type InsertGamePost = z.infer<typeof insertGamePostSchema>;
+export type FavoriteGame = typeof favoriteGames.$inferSelect;
+export type InsertFavoriteGame = z.infer<typeof insertFavoriteGameSchema>;
 
 // Additional types for API responses
 export type GameWithUserData = Game & {

@@ -6,7 +6,7 @@ import EditProfileDialog from "@/components/EditProfileDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, LogOut, Star, Clock, CheckCircle, Edit, Gamepad2, Plus } from "lucide-react";
+import { ArrowLeft, LogOut, Star, Clock, CheckCircle, Edit, Gamepad2, Plus, MessageSquare, Camera } from "lucide-react";
 import { useLocation } from "wouter";
 import type { Review, Game } from "@shared/schema";
 
@@ -24,6 +24,17 @@ export default function Profile() {
       const response = await fetch(`/api/users/${user.id}/reviews`);
       if (!response.ok) throw new Error("Failed to fetch reviews");
       return response.json() as Promise<ReviewWithGame[]>;
+    },
+    enabled: !!user?.id,
+  });
+
+  const { data: userPosts } = useQuery({
+    queryKey: ["/api/users", user?.id, "posts"],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const response = await fetch(`/api/users/${user.id}/posts`);
+      if (!response.ok) throw new Error("Failed to fetch posts");
+      return response.json();
     },
     enabled: !!user?.id,
   });
@@ -292,42 +303,125 @@ export default function Profile() {
           </CardContent>
         </Card>
 
-        {/* Recent Reviews */}
-        {userReviews && userReviews.length > 0 && (
-          <div>
-            <h3 className="text-lg font-semibold text-white mb-4">Recent Reviews</h3>
-            <div className="space-y-3">
-              {userReviews.slice(0, 5).map((review) => (
-                <Card key={review.id} className="bg-gaming-card border-slate-700">
-                  <CardContent className="p-4">
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="font-semibold text-white">{review.game.title}</h4>
-                      <div className="flex items-center text-yellow-400">
-                        <Star className="w-4 h-4 mr-1 fill-current" />
-                        <span className="text-sm">{review.rating}</span>
+        {/* Recent Activity */}
+        {(() => {
+          const activities: any[] = [];
+          
+          // Add reviews as activities
+          if (userReviews) {
+            userReviews.forEach((review: any) => {
+              activities.push({
+                id: `review-${review.id}`,
+                type: 'review',
+                game: review.game,
+                content: review.content,
+                title: review.title,
+                rating: review.rating,
+                imageUrl: review.imageUrl,
+                createdAt: review.createdAt,
+              });
+            });
+          }
+          
+          // Add posts as activities
+          if (userPosts) {
+            userPosts.forEach((post: any) => {
+              activities.push({
+                id: `post-${post.id}`,
+                type: post.postType || 'post',
+                game: post.game,
+                content: post.content,
+                imageUrls: post.imageUrls,
+                createdAt: post.createdAt,
+              });
+            });
+          }
+          
+          // Sort by creation date (newest first)
+          activities.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          
+          return activities.length > 0 ? (
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-4">Recent Activity</h3>
+              <div className="space-y-3">
+                {activities.slice(0, 10).map((activity) => (
+                  <Card key={activity.id} className="bg-gaming-card border-slate-700">
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex items-center space-x-2">
+                          {activity.type === 'review' && (
+                            <MessageSquare className="w-4 h-4 text-gaming-purple" />
+                          )}
+                          {activity.type === 'media' && (
+                            <Camera className="w-4 h-4 text-gaming-purple" />
+                          )}
+                          {activity.type === 'post' && (
+                            <Edit className="w-4 h-4 text-gaming-purple" />
+                          )}
+                          <h4 className="font-semibold text-white">{activity.game?.title}</h4>
+                        </div>
+                        {activity.type === 'review' && activity.rating && (
+                          <div className="flex items-center text-yellow-400">
+                            <Star className="w-4 h-4 mr-1 fill-current" />
+                            <span className="text-sm">{activity.rating}</span>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                    {review.title && (
-                      <h5 className="font-medium text-gaming-purple text-sm mb-1">
-                        {review.title}
-                      </h5>
-                    )}
-                    {review.content && (
-                      <p className="text-slate-400 text-sm">
-                        {review.content.length > 100 
-                          ? `${review.content.substring(0, 100)}...` 
-                          : review.content}
-                      </p>
-                    )}
-                    <p className="text-slate-500 text-xs mt-2">
-                      {new Date(review.createdAt).toLocaleDateString()}
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
+                      
+                      {activity.title && (
+                        <h5 className="font-medium text-gaming-purple text-sm mb-1">
+                          {activity.title}
+                        </h5>
+                      )}
+                      
+                      {activity.content && (
+                        <p className="text-slate-400 text-sm mb-2">
+                          {activity.content.length > 100 
+                            ? `${activity.content.substring(0, 100)}...` 
+                            : activity.content}
+                        </p>
+                      )}
+                      
+                      {/* Show media for posts */}
+                      {activity.type === 'media' && activity.imageUrls && activity.imageUrls.length > 0 && (
+                        <div className="grid grid-cols-2 gap-2 mb-2">
+                          {activity.imageUrls.slice(0, 4).map((imageUrl: string, index: number) => (
+                            <img
+                              key={index}
+                              src={imageUrl}
+                              alt="User media"
+                              className="w-full h-16 object-cover rounded border border-slate-600"
+                            />
+                          ))}
+                        </div>
+                      )}
+                      
+                      {/* Show single image for reviews */}
+                      {activity.type === 'review' && activity.imageUrl && (
+                        <div className="mb-2">
+                          <img
+                            src={activity.imageUrl}
+                            alt="Review media"
+                            className="w-24 h-16 object-cover rounded border border-slate-600"
+                          />
+                        </div>
+                      )}
+                      
+                      <div className="flex justify-between items-center mt-2">
+                        <p className="text-slate-500 text-xs">
+                          {new Date(activity.createdAt).toLocaleDateString()}
+                        </p>
+                        <span className="text-xs text-slate-500 capitalize">
+                          {activity.type === 'media' ? 'Photo Upload' : activity.type}
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          ) : null;
+        })()}
       </div>
 
       {/* Bottom Navigation */}

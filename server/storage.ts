@@ -6,6 +6,7 @@ import {
   activities,
   userFollows,
   gamePosts,
+  favoriteGames,
   type User,
   type UpsertUser,
   type Game,
@@ -18,6 +19,8 @@ import {
   type InsertActivity,
   type GamePost,
   type InsertGamePost,
+  type FavoriteGame,
+  type InsertFavoriteGame,
   type GameWithUserData,
   type UserWithStats,
   type ActivityWithDetails,
@@ -84,6 +87,11 @@ export interface IStorage {
   getUserGamePosts(userId: string, limit?: number): Promise<(GamePost & { game: Game })[]>;
   createGamePost(post: InsertGamePost): Promise<GamePost>;
   deleteGamePost(id: number, userId: string): Promise<void>;
+
+  // Favorite games operations
+  getUserFavoriteGames(userId: string): Promise<(FavoriteGame & { game: Game })[]>;
+  setFavoriteGame(userId: string, gameId: number, position: number): Promise<FavoriteGame>;
+  removeFavoriteGame(userId: string, position: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -836,6 +844,64 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(gamePosts)
       .where(and(eq(gamePosts.id, id), eq(gamePosts.userId, userId)));
+  }
+
+  // Favorite games operations
+  async getUserFavoriteGames(userId: string): Promise<(FavoriteGame & { game: Game })[]> {
+    return await db
+      .select({
+        id: favoriteGames.id,
+        userId: favoriteGames.userId,
+        gameId: favoriteGames.gameId,
+        position: favoriteGames.position,
+        createdAt: favoriteGames.createdAt,
+        game: {
+          id: games.id,
+          igdbId: games.igdbId,
+          title: games.title,
+          description: games.description,
+          coverImageUrl: games.coverImageUrl,
+          screenshotUrls: games.screenshotUrls,
+          genre: games.genre,
+          platform: games.platform,
+          releaseDate: games.releaseDate,
+          developer: games.developer,
+          publisher: games.publisher,
+          metacriticScore: games.metacriticScore,
+          igdbRating: games.igdbRating,
+          isRetro: games.isRetro,
+          createdAt: games.createdAt,
+        },
+      })
+      .from(favoriteGames)
+      .innerJoin(games, eq(games.id, favoriteGames.gameId))
+      .where(eq(favoriteGames.userId, userId))
+      .orderBy(favoriteGames.position);
+  }
+
+  async setFavoriteGame(userId: string, gameId: number, position: number): Promise<FavoriteGame> {
+    // First, remove any existing game in this position
+    await db
+      .delete(favoriteGames)
+      .where(and(eq(favoriteGames.userId, userId), eq(favoriteGames.position, position)));
+
+    // Insert the new favorite game
+    const [favoriteGame] = await db
+      .insert(favoriteGames)
+      .values({
+        userId,
+        gameId,
+        position,
+      })
+      .returning();
+    
+    return favoriteGame;
+  }
+
+  async removeFavoriteGame(userId: string, position: number): Promise<void> {
+    await db
+      .delete(favoriteGames)
+      .where(and(eq(favoriteGames.userId, userId), eq(favoriteGames.position, position)));
   }
 }
 
