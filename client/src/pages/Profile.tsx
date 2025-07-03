@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import BottomNavigation from "@/components/BottomNavigation";
+import EditProfileDialog from "@/components/EditProfileDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, LogOut, Star, Clock, CheckCircle } from "lucide-react";
+import { ArrowLeft, LogOut, Star, Clock, CheckCircle, Edit } from "lucide-react";
 import { useLocation } from "wouter";
 import type { Review, Game } from "@shared/schema";
 
@@ -12,6 +14,7 @@ type ReviewWithGame = Review & { game: Game };
 export default function Profile() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   const { data: userReviews } = useQuery({
     queryKey: ["/api/users", user?.id, "reviews"],
@@ -69,25 +72,35 @@ export default function Profile() {
         {/* Profile Info */}
         <Card className="bg-gaming-card border-slate-700 mb-6">
           <CardContent className="p-4">
-            <div className="flex items-center space-x-4 mb-4">
-              <img 
-                src={user.profileImageUrl || "https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=100&h=100&fit=crop&crop=face"} 
-                alt="Profile" 
-                className="w-16 h-16 rounded-full object-cover border-2 border-gaming-purple"
-              />
-              <div>
-                <h2 className="text-lg font-semibold text-white">
-                  {user.firstName && user.lastName 
-                    ? `${user.firstName} ${user.lastName}` 
-                    : user.username || "Gaming Enthusiast"}
-                </h2>
-                <p className="text-slate-400 text-sm">
-                  {user.email}
-                </p>
-                {user.bio && (
-                  <p className="text-slate-300 text-sm mt-1">{user.bio}</p>
-                )}
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center space-x-4">
+                <img 
+                  src={user.profileImageUrl || "https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=100&h=100&fit=crop&crop=face"} 
+                  alt="Profile" 
+                  className="w-16 h-16 rounded-full object-cover border-2 border-gaming-purple"
+                />
+                <div>
+                  <h2 className="text-lg font-semibold text-white">
+                    {user.firstName && user.lastName 
+                      ? `${user.firstName} ${user.lastName}` 
+                      : user.username || "Gaming Enthusiast"}
+                  </h2>
+                  <p className="text-slate-400 text-sm">
+                    {user.email}
+                  </p>
+                  {user.bio && (
+                    <p className="text-slate-300 text-sm mt-1">{user.bio}</p>
+                  )}
+                </div>
               </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowEditDialog(true)}
+                className="p-2 rounded-lg hover:bg-slate-800 transition-colors"
+              >
+                <Edit className="w-4 h-4 text-slate-400" />
+              </Button>
             </div>
 
             {/* Stats */}
@@ -171,6 +184,13 @@ export default function Profile() {
 
       {/* Bottom Navigation */}
       <BottomNavigation activeTab="profile" />
+
+      {/* Edit Profile Dialog */}
+      <EditProfileDialog 
+        open={showEditDialog} 
+        onOpenChange={setShowEditDialog} 
+        user={user} 
+      />
     </div>
   );
 }

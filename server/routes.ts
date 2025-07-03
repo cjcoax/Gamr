@@ -33,6 +33,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updateData = z.object({
         username: z.string().optional(),
         bio: z.string().optional(),
+        profileImageUrl: z.string().url().optional(),
       }).parse(req.body);
 
       const user = await storage.updateUserProfile(userId, updateData);
@@ -197,11 +198,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }).parse(req.body);
 
       // Add completion timestamp if status changed to completed
-      if (updateData.status === "completed") {
-        updateData.completedAt = new Date();
-      }
+      const finalUpdateData = updateData.status === "completed" 
+        ? { ...updateData, completedAt: new Date() }
+        : updateData;
 
-      const userGame = await storage.updateUserGame(userGameId, updateData);
+      const userGame = await storage.updateUserGame(userGameId, finalUpdateData);
 
       // Create activity for certain updates
       if (updateData.status === "completed") {

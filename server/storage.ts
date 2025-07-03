@@ -259,7 +259,7 @@ export class DatabaseStorage implements IStorage {
 
   // User game library operations
   async getUserGames(userId: string, status?: string): Promise<(UserGame & { game: Game })[]> {
-    const query = db
+    let query = db
       .select({
         id: userGames.id,
         userId: userGames.userId,
@@ -275,14 +275,17 @@ export class DatabaseStorage implements IStorage {
         game: games,
       })
       .from(userGames)
-      .innerJoin(games, eq(games.id, userGames.gameId))
-      .where(eq(userGames.userId, userId));
+      .innerJoin(games, eq(games.id, userGames.gameId));
 
     if (status) {
-      query.where(and(eq(userGames.userId, userId), eq(userGames.status, status)));
+      return query
+        .where(and(eq(userGames.userId, userId), eq(userGames.status, status)))
+        .orderBy(desc(userGames.updatedAt));
+    } else {
+      return query
+        .where(eq(userGames.userId, userId))
+        .orderBy(desc(userGames.updatedAt));
     }
-
-    return query.orderBy(desc(userGames.updatedAt));
   }
 
   async getUserGame(userId: string, gameId: number): Promise<UserGame | undefined> {
