@@ -144,6 +144,114 @@ export default function Profile() {
           </CardContent>
         </Card>
 
+        {/* Gaming Platform Usernames */}
+        {(user.steamUsername || user.epicUsername || user.battlenetUsername || 
+          user.psnUsername || user.xboxUsername || user.nintendoUsername || 
+          user.eaUsername || user.discordUsername) && (
+          <Card className="bg-gaming-card border-slate-700">
+            <CardContent className="p-6">
+              <h3 className="text-lg font-semibold text-white mb-4">Gaming Platforms</h3>
+              <div className="grid grid-cols-2 gap-4">
+                {user.steamUsername && (
+                  <div className="flex items-center">
+                    <div className="w-8 h-8 bg-slate-700 rounded-md flex items-center justify-center mr-3">
+                      <span className="text-xs font-bold text-white">ST</span>
+                    </div>
+                    <div>
+                      <div className="text-xs text-slate-400">Steam</div>
+                      <div className="text-sm text-white">{user.steamUsername}</div>
+                    </div>
+                  </div>
+                )}
+                
+                {user.epicUsername && (
+                  <div className="flex items-center">
+                    <div className="w-8 h-8 bg-slate-700 rounded-md flex items-center justify-center mr-3">
+                      <span className="text-xs font-bold text-white">EP</span>
+                    </div>
+                    <div>
+                      <div className="text-xs text-slate-400">Epic Games</div>
+                      <div className="text-sm text-white">{user.epicUsername}</div>
+                    </div>
+                  </div>
+                )}
+                
+                {user.battlenetUsername && (
+                  <div className="flex items-center">
+                    <div className="w-8 h-8 bg-slate-700 rounded-md flex items-center justify-center mr-3">
+                      <span className="text-xs font-bold text-white">BN</span>
+                    </div>
+                    <div>
+                      <div className="text-xs text-slate-400">Battle.net</div>
+                      <div className="text-sm text-white">{user.battlenetUsername}</div>
+                    </div>
+                  </div>
+                )}
+                
+                {user.psnUsername && (
+                  <div className="flex items-center">
+                    <div className="w-8 h-8 bg-slate-700 rounded-md flex items-center justify-center mr-3">
+                      <span className="text-xs font-bold text-white">PS</span>
+                    </div>
+                    <div>
+                      <div className="text-xs text-slate-400">PlayStation</div>
+                      <div className="text-sm text-white">{user.psnUsername}</div>
+                    </div>
+                  </div>
+                )}
+                
+                {user.xboxUsername && (
+                  <div className="flex items-center">
+                    <div className="w-8 h-8 bg-slate-700 rounded-md flex items-center justify-center mr-3">
+                      <span className="text-xs font-bold text-white">XB</span>
+                    </div>
+                    <div>
+                      <div className="text-xs text-slate-400">Xbox Live</div>
+                      <div className="text-sm text-white">{user.xboxUsername}</div>
+                    </div>
+                  </div>
+                )}
+                
+                {user.nintendoUsername && (
+                  <div className="flex items-center">
+                    <div className="w-8 h-8 bg-slate-700 rounded-md flex items-center justify-center mr-3">
+                      <span className="text-xs font-bold text-white">NI</span>
+                    </div>
+                    <div>
+                      <div className="text-xs text-slate-400">Nintendo</div>
+                      <div className="text-sm text-white">{user.nintendoUsername}</div>
+                    </div>
+                  </div>
+                )}
+                
+                {user.eaUsername && (
+                  <div className="flex items-center">
+                    <div className="w-8 h-8 bg-slate-700 rounded-md flex items-center justify-center mr-3">
+                      <span className="text-xs font-bold text-white">EA</span>
+                    </div>
+                    <div>
+                      <div className="text-xs text-slate-400">EA</div>
+                      <div className="text-sm text-white">{user.eaUsername}</div>
+                    </div>
+                  </div>
+                )}
+                
+                {user.discordUsername && (
+                  <div className="flex items-center">
+                    <div className="w-8 h-8 bg-slate-700 rounded-md flex items-center justify-center mr-3">
+                      <span className="text-xs font-bold text-white">DC</span>
+                    </div>
+                    <div>
+                      <div className="text-xs text-slate-400">Discord</div>
+                      <div className="text-sm text-white">{user.discordUsername}</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Recent Reviews */}
         {userReviews && userReviews.length > 0 && (
           <div>

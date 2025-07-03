@@ -32,6 +32,14 @@ export default function EditProfileDialog({ open, onOpenChange, user }: EditProf
     username: user.username || "",
     bio: user.bio || "",
     profileImageUrl: user.profileImageUrl || "",
+    steamUsername: user.steamUsername || "",
+    epicUsername: user.epicUsername || "",
+    battlenetUsername: user.battlenetUsername || "",
+    psnUsername: user.psnUsername || "",
+    xboxUsername: user.xboxUsername || "",
+    nintendoUsername: user.nintendoUsername || "",
+    eaUsername: user.eaUsername || "",
+    discordUsername: user.discordUsername || "",
   });
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
 
@@ -125,6 +133,14 @@ export default function EditProfileDialog({ open, onOpenChange, user }: EditProf
         username: user.username || "",
         bio: user.bio || "",
         profileImageUrl: user.profileImageUrl || "",
+        steamUsername: user.steamUsername || "",
+        epicUsername: user.epicUsername || "",
+        battlenetUsername: user.battlenetUsername || "",
+        psnUsername: user.psnUsername || "",
+        xboxUsername: user.xboxUsername || "",
+        nintendoUsername: user.nintendoUsername || "",
+        eaUsername: user.eaUsername || "",
+        discordUsername: user.discordUsername || "",
       });
     }
   };
@@ -248,6 +264,125 @@ export default function EditProfileDialog({ open, onOpenChange, user }: EditProf
             <p className="text-xs text-slate-400 mt-1">
               {formData.bio.length}/200 characters
             </p>
+          </div>
+
+          <div>
+            <Label className="text-sm font-medium text-slate-300 mb-3 block">
+              Gaming Platform Usernames
+            </Label>
+            <div className="grid grid-cols-1 gap-3">
+              <div>
+                <Label htmlFor="steam" className="text-xs text-slate-400">
+                  Steam
+                </Label>
+                <Input
+                  id="steam"
+                  type="text"
+                  value={formData.steamUsername}
+                  onChange={(e) => handleChange("steamUsername", e.target.value)}
+                  className="bg-gaming-dark border-slate-600 text-white text-sm"
+                  placeholder="Your Steam username"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="epic" className="text-xs text-slate-400">
+                  Epic Games
+                </Label>
+                <Input
+                  id="epic"
+                  type="text"
+                  value={formData.epicUsername}
+                  onChange={(e) => handleChange("epicUsername", e.target.value)}
+                  className="bg-gaming-dark border-slate-600 text-white text-sm"
+                  placeholder="Your Epic Games username"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="battlenet" className="text-xs text-slate-400">
+                  Battle.net
+                </Label>
+                <Input
+                  id="battlenet"
+                  type="text"
+                  value={formData.battlenetUsername}
+                  onChange={(e) => handleChange("battlenetUsername", e.target.value)}
+                  className="bg-gaming-dark border-slate-600 text-white text-sm"
+                  placeholder="Your Battle.net username"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="psn" className="text-xs text-slate-400">
+                  PlayStation Network
+                </Label>
+                <Input
+                  id="psn"
+                  type="text"
+                  value={formData.psnUsername}
+                  onChange={(e) => handleChange("psnUsername", e.target.value)}
+                  className="bg-gaming-dark border-slate-600 text-white text-sm"
+                  placeholder="Your PSN username"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="xbox" className="text-xs text-slate-400">
+                  Xbox Live
+                </Label>
+                <Input
+                  id="xbox"
+                  type="text"
+                  value={formData.xboxUsername}
+                  onChange={(e) => handleChange("xboxUsername", e.target.value)}
+                  className="bg-gaming-dark border-slate-600 text-white text-sm"
+                  placeholder="Your Xbox gamertag"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="nintendo" className="text-xs text-slate-400">
+                  Nintendo
+                </Label>
+                <Input
+                  id="nintendo"
+                  type="text"
+                  value={formData.nintendoUsername}
+                  onChange={(e) => handleChange("nintendoUsername", e.target.value)}
+                  className="bg-gaming-dark border-slate-600 text-white text-sm"
+                  placeholder="Your Nintendo username"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="ea" className="text-xs text-slate-400">
+                  EA
+                </Label>
+                <Input
+                  id="ea"
+                  type="text"
+                  value={formData.eaUsername}
+                  onChange={(e) => handleChange("eaUsername", e.target.value)}
+                  className="bg-gaming-dark border-slate-600 text-white text-sm"
+                  placeholder="Your EA username"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="discord" className="text-xs text-slate-400">
+                  Discord
+                </Label>
+                <Input
+                  id="discord"
+                  type="text"
+                  value={formData.discordUsername}
+                  onChange={(e) => handleChange("discordUsername", e.target.value)}
+                  className="bg-gaming-dark border-slate-600 text-white text-sm"
+                  placeholder="Your Discord username"
+                />
+              </div>
+            </div>
           </div>
 
           <div className="flex space-x-3 pt-4">

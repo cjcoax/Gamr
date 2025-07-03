@@ -34,6 +34,15 @@ export const users = pgTable("users", {
   profileImageUrl: varchar("profile_image_url"),
   username: varchar("username").unique(),
   bio: text("bio"),
+  // Gaming platform usernames
+  steamUsername: varchar("steam_username"),
+  epicUsername: varchar("epic_username"),
+  battlenetUsername: varchar("battlenet_username"),
+  psnUsername: varchar("psn_username"),
+  xboxUsername: varchar("xbox_username"),
+  nintendoUsername: varchar("nintendo_username"),
+  eaUsername: varchar("ea_username"),
+  discordUsername: varchar("discord_username"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
