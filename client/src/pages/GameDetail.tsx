@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Star, Plus, Edit, Upload, Image, Calendar, Users } from "lucide-react";
@@ -73,12 +73,20 @@ export default function GameDetail() {
 
   const submitReviewMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest("POST", "/api/reviews", {
+      const reviewData: any = {
         gameId: parseInt(id!),
         rating: reviewRating,
-        content: reviewText.trim() || null,
-        imageUrl: reviewImage,
-      });
+      };
+      
+      // Only include optional fields if they have values
+      if (reviewText.trim()) {
+        reviewData.content = reviewText.trim();
+      }
+      if (reviewImage) {
+        reviewData.imageUrl = reviewImage;
+      }
+      
+      await apiRequest("POST", "/api/reviews", reviewData);
     },
     onSuccess: () => {
       toast({ title: "Success", description: "Review submitted successfully!" });
@@ -277,6 +285,9 @@ export default function GameDetail() {
                 <DialogContent className="bg-gaming-card border-slate-700 text-white max-w-md mx-auto">
                   <DialogHeader>
                     <DialogTitle className="text-white">Review {game.title}</DialogTitle>
+                    <DialogDescription className="text-slate-400">
+                      Share your rating and thoughts about this game
+                    </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4">
                     <div>

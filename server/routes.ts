@@ -271,8 +271,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const reviewData = z.object({
         gameId: z.number(),
         rating: z.number().min(1).max(5),
-        content: z.string().optional(),
-        imageUrl: z.string().optional(),
+        content: z.string().nullable().optional(),
+        imageUrl: z.string().nullable().optional(),
       }).parse(req.body);
 
       const review = await storage.createReview({
