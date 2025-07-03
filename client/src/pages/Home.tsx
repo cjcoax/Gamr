@@ -9,6 +9,7 @@ import RecentActivity from "@/components/RecentActivity";
 import LibraryPreview from "@/components/LibraryPreview";
 import BottomNavigation from "@/components/BottomNavigation";
 import AddGameDialog from "@/components/AddGameDialog";
+import BannerAd from "@/components/BannerAd";
 import { Button } from "@/components/ui/button";
 import { Search, Bell, Plus } from "lucide-react";
 import { useLocation } from "wouter";
@@ -85,6 +86,7 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="pb-20">
+        <BannerAd />
         <UserStats user={user} />
         <CurrentlyPlaying />
         <DiscoverSection />
