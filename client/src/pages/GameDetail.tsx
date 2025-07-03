@@ -256,7 +256,9 @@ export default function GameDetail() {
 
   const averageRating = gameData.averageRating || 0;
   const reviewCount = gameData.reviewCount || 0;
-  const userReview = (reviews as any[]).find((review: any) => review.user?.id === user?.id);
+  const reviewsArray = reviews as any[];
+  const postsArray = posts as any[];
+  const userReview = reviewsArray.find((review: any) => review.user?.id === user?.id);
 
   return (
     <div className="min-h-screen bg-gaming-dark text-slate-50">
@@ -541,9 +543,9 @@ export default function GameDetail() {
                       </div>
                     </div>
                     
-                    {reviews.length > 0 ? (
+                    {reviewsArray.length > 0 ? (
                       <div className="space-y-3">
-                        {reviews.slice(0, 3).map((review: any) => (
+                        {reviewsArray.slice(0, 3).map((review: any) => (
                           <div key={review.id} className="border-b border-slate-700 last:border-b-0 pb-3 last:pb-0">
                             <div className="flex items-start justify-between mb-2">
                               <div className="flex items-center space-x-2">
@@ -585,7 +587,7 @@ export default function GameDetail() {
                     
                     {/* Filter reviews that have images */}
                     {(() => {
-                      const reviewsWithImages = reviews.filter((review: any) => review.imageUrl);
+                      const reviewsWithImages = reviewsArray.filter((review: any) => review.imageUrl);
                       return reviewsWithImages.length > 0 ? (
                         <div className="grid grid-cols-2 gap-3">
                           {reviewsWithImages.map((review: any) => (
@@ -677,7 +679,7 @@ export default function GameDetail() {
                 <Card className="bg-gaming-card border-slate-700">
                   <CardContent className="p-4">
                     {(() => {
-                      const gamePosts = Array.isArray(posts) ? posts : [];
+                      const gamePosts = Array.isArray(postsArray) ? postsArray : [];
                       return gamePosts.length > 0 ? (
                         <div className="space-y-4">
                           <h3 className="text-sm font-medium text-slate-400 mb-3">Community Posts</h3>
