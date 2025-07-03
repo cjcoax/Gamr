@@ -48,13 +48,20 @@ export default function Profile() {
 
   const { data: favoriteGames = [] } = useQuery({
     queryKey: ["/api/favorites"],
-    queryFn: () => apiRequest("/api/favorites"),
+    queryFn: async () => {
+      const response = await fetch("/api/favorites");
+      if (!response.ok) throw new Error("Failed to fetch favorites");
+      return response.json();
+    },
     enabled: !!user?.id,
   });
 
   const removeFavoriteMutation = useMutation({
-    mutationFn: (position: number) => 
-      apiRequest(`/api/favorites/${position}`, { method: 'DELETE' }),
+    mutationFn: async (position: number) => {
+      const response = await fetch(`/api/favorites/${position}`, { method: 'DELETE' });
+      if (!response.ok) throw new Error("Failed to remove favorite");
+      return response.json();
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/favorites'] });
       toast({

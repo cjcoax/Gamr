@@ -24,16 +24,23 @@ export default function FavoriteGameDialog({ open, onOpenChange, position }: Fav
   const { data: searchResults = [], isLoading: isSearching } = useQuery({
     queryKey: ['/api/games/search', searchQuery],
     enabled: searchQuery.length > 2,
-    queryFn: () => apiRequest(`/api/games/search?q=${encodeURIComponent(searchQuery)}`),
+    queryFn: async () => {
+      const response = await fetch(`/api/games/search?q=${encodeURIComponent(searchQuery)}`);
+      if (!response.ok) throw new Error('Search failed');
+      return response.json();
+    },
   });
 
   // Set favorite game mutation
   const setFavoriteMutation = useMutation({
     mutationFn: async (gameId: number) => {
-      return apiRequest('/api/favorites', {
+      const response = await fetch('/api/favorites', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ gameId, position })
       });
+      if (!response.ok) throw new Error('Failed to set favorite');
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/favorites'] });
