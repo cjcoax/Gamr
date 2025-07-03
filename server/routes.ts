@@ -459,6 +459,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Game posts routes
+  app.get("/api/games/:id/posts", async (req, res) => {
+    try {
+      const gameId = parseInt(req.params.id);
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
+      
+      const posts = await storage.getGamePosts(gameId, limit);
+      res.json(posts);
+    } catch (error) {
+      console.error("Error fetching game posts:", error);
+      res.status(500).json({ message: "Failed to fetch game posts" });
+    }
+  });
+
+  app.get("/api/users/:id/posts", async (req, res) => {
+    try {
+      const userId = req.params.id;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
+      
+      const posts = await storage.getUserGamePosts(userId, limit);
+      res.json(posts);
+    } catch (error) {
+      console.error("Error fetching user posts:", error);
+      res.status(500).json({ message: "Failed to fetch user posts" });
+    }
+  });
+
+  app.post("/api/posts", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { gameId, content, imageUrls, postType } = req.body;
+
+      if (!gameId || !content) {
+        return res.status(400).json({ message: "Game ID and content are required" });
+      }
+
+      const post = await storage.createGamePost({
+        userId,
+        gameId: parseInt(gameId),
+        content,
+        imageUrls: imageUrls || [],
+        postType: postType || "text",
+      });
+
+      res.status(201).json(post);
+    } catch (error) {
+      console.error("Error creating game post:", error);
+      res.status(500).json({ message: "Failed to create post" });
+    }
+  });
+
+  app.delete("/api/posts/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const postId = parseInt(req.params.id);
+
+      await storage.deleteGamePost(postId, userId);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting game post:", error);
+      res.status(500).json({ message: "Failed to delete post" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

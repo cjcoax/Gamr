@@ -5,6 +5,7 @@ import {
   reviews,
   activities,
   userFollows,
+  gamePosts,
   type User,
   type UpsertUser,
   type Game,
@@ -15,6 +16,8 @@ import {
   type InsertReview,
   type Activity,
   type InsertActivity,
+  type GamePost,
+  type InsertGamePost,
   type GameWithUserData,
   type UserWithStats,
   type ActivityWithDetails,
@@ -73,6 +76,12 @@ export interface IStorage {
   createGameFromIGDB(igdbId: number): Promise<Game>;
   getGameByIGDBId(igdbId: number): Promise<Game | undefined>;
   updateSampleGamesWithIGDB(): Promise<void>;
+
+  // Game posts operations
+  getGamePosts(gameId: number, limit?: number): Promise<(GamePost & { user: User })[]>;
+  getUserGamePosts(userId: string, limit?: number): Promise<(GamePost & { game: Game })[]>;
+  createGamePost(post: InsertGamePost): Promise<GamePost>;
+  deleteGamePost(id: number, userId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -593,6 +602,93 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error("Error updating sample games with IGDB data:", error);
     }
+  }
+
+  // Game posts operations
+  async getGamePosts(gameId: number, limit = 20): Promise<(GamePost & { user: User })[]> {
+    return db
+      .select({
+        id: gamePosts.id,
+        userId: gamePosts.userId,
+        gameId: gamePosts.gameId,
+        content: gamePosts.content,
+        imageUrls: gamePosts.imageUrls,
+        postType: gamePosts.postType,
+        createdAt: gamePosts.createdAt,
+        user: {
+          id: users.id,
+          email: users.email,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          profileImageUrl: users.profileImageUrl,
+          username: users.username,
+          bio: users.bio,
+          steamUsername: users.steamUsername,
+          epicUsername: users.epicUsername,
+          battlenetUsername: users.battlenetUsername,
+          psnUsername: users.psnUsername,
+          xboxUsername: users.xboxUsername,
+          nintendoUsername: users.nintendoUsername,
+          eaUsername: users.eaUsername,
+          discordUsername: users.discordUsername,
+          createdAt: users.createdAt,
+          updatedAt: users.updatedAt,
+        },
+      })
+      .from(gamePosts)
+      .innerJoin(users, eq(users.id, gamePosts.userId))
+      .where(eq(gamePosts.gameId, gameId))
+      .orderBy(desc(gamePosts.createdAt))
+      .limit(limit);
+  }
+
+  async getUserGamePosts(userId: string, limit = 20): Promise<(GamePost & { game: Game })[]> {
+    return db
+      .select({
+        id: gamePosts.id,
+        userId: gamePosts.userId,
+        gameId: gamePosts.gameId,
+        content: gamePosts.content,
+        imageUrls: gamePosts.imageUrls,
+        postType: gamePosts.postType,
+        createdAt: gamePosts.createdAt,
+        game: {
+          id: games.id,
+          igdbId: games.igdbId,
+          title: games.title,
+          description: games.description,
+          coverImageUrl: games.coverImageUrl,
+          screenshotUrls: games.screenshotUrls,
+          genre: games.genre,
+          platform: games.platform,
+          releaseDate: games.releaseDate,
+          developer: games.developer,
+          publisher: games.publisher,
+          metacriticScore: games.metacriticScore,
+          igdbRating: games.igdbRating,
+          isRetro: games.isRetro,
+          createdAt: games.createdAt,
+        },
+      })
+      .from(gamePosts)
+      .innerJoin(games, eq(games.id, gamePosts.gameId))
+      .where(eq(gamePosts.userId, userId))
+      .orderBy(desc(gamePosts.createdAt))
+      .limit(limit);
+  }
+
+  async createGamePost(post: InsertGamePost): Promise<GamePost> {
+    const [newPost] = await db
+      .insert(gamePosts)
+      .values(post)
+      .returning();
+    return newPost;
+  }
+
+  async deleteGamePost(id: number, userId: string): Promise<void> {
+    await db
+      .delete(gamePosts)
+      .where(and(eq(gamePosts.id, id), eq(gamePosts.userId, userId)));
   }
 }
 

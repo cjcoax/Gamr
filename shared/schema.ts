@@ -114,6 +114,17 @@ export const userFollows = pgTable("user_follows", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Game posts (user posts about games - separate from reviews)
+export const gamePosts = pgTable("game_posts", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  gameId: integer("game_id").notNull().references(() => games.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  imageUrls: text("image_urls").array(),
+  postType: varchar("post_type", { length: 50 }).notNull().default("text"), // text, image, screenshot
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   userGames: many(userGames),
@@ -127,6 +138,7 @@ export const gamesRelations = relations(games, ({ many }) => ({
   userGames: many(userGames),
   reviews: many(reviews),
   activities: many(activities),
+  posts: many(gamePosts),
 }));
 
 export const userGamesRelations = relations(userGames, ({ one }) => ({
@@ -175,6 +187,17 @@ export const userFollowsRelations = relations(userFollows, ({ one }) => ({
   }),
 }));
 
+export const gamePostsRelations = relations(gamePosts, ({ one }) => ({
+  user: one(users, {
+    fields: [gamePosts.userId],
+    references: [users.id],
+  }),
+  game: one(games, {
+    fields: [gamePosts.gameId],
+    references: [games.id],
+  }),
+}));
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   createdAt: true,
@@ -208,6 +231,11 @@ export const insertUserFollowSchema = createInsertSchema(userFollows).omit({
   createdAt: true,
 });
 
+export const insertGamePostSchema = createInsertSchema(gamePosts).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -221,6 +249,8 @@ export type Activity = typeof activities.$inferSelect;
 export type InsertActivity = z.infer<typeof insertActivitySchema>;
 export type UserFollow = typeof userFollows.$inferSelect;
 export type InsertUserFollow = z.infer<typeof insertUserFollowSchema>;
+export type GamePost = typeof gamePosts.$inferSelect;
+export type InsertGamePost = z.infer<typeof insertGamePostSchema>;
 
 // Additional types for API responses
 export type GameWithUserData = Game & {
