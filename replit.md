@@ -112,6 +112,10 @@ Gamr is a full-stack web application that serves as a personal gaming library an
 Changelog:
 - July 03, 2025. Initial setup
 - July 03, 2025. Added gaming platform username fields to user profiles - Steam, Epic, Battle.net, PSN, Xbox, Nintendo, EA, Discord
+- July 03, 2025. Fixed critical routing issue - GameCard/DiscoverSection were using `/game/${id}` while routes defined `/games/:id`
+- July 03, 2025. Resolved TypeScript errors in GameDetail component causing crashes with proper type guards
+- July 03, 2025. Made Edit Profile dialog scrollable and fixed form submission to include all gaming platform usernames
+- July 03, 2025. Complete Skyrim prototype now working - game detail page loads consistently from home and search
 ```
 
 ## User Preferences
