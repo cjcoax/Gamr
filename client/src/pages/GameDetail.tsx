@@ -53,6 +53,9 @@ export default function GameDetail() {
     enabled: !!id,
   });
 
+  // Debug logging
+  console.log("GameDetail debug:", { id, isLoading, game });
+
   const { data: reviews = [] } = useQuery({
     queryKey: ["/api/games", id, "reviews"],
     enabled: !!id,
@@ -236,7 +239,7 @@ export default function GameDetail() {
     );
   }
 
-  if (!game) {
+  if (!game || !game.id || !game.title) {
     return (
       <div className="min-h-screen bg-gaming-dark text-slate-50">
         <div className="max-w-sm mx-auto p-4 text-center">
