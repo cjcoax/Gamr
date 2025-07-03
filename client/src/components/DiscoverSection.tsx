@@ -69,7 +69,7 @@ export default function DiscoverSection() {
         <div className="mb-6">
           <Card 
             className="bg-gaming-card border-slate-700/50 overflow-hidden hover:border-gaming-purple/50 transition-colors cursor-pointer"
-            onClick={() => setLocation(`/game/${featuredGame.id}`)}
+            onClick={() => setLocation(`/games/${featuredGame.id}`)}
           >
             <div 
               className="h-32 bg-cover bg-center"

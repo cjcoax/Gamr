@@ -33,7 +33,7 @@ export default function GameCard({ game, userGame, showProgress }: GameCardProps
   return (
     <Card 
       className="bg-gaming-card rounded-xl border border-slate-700/50 hover:border-gaming-purple/50 transition-colors cursor-pointer"
-      onClick={() => setLocation(`/game/${game.id}`)}
+      onClick={() => setLocation(`/games/${game.id}`)}
     >
       <CardContent className="p-4">
         <div className="flex space-x-3">
