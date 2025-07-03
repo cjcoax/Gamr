@@ -411,6 +411,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // IGDB Integration routes
+  app.get("/api/games/search-igdb", async (req, res) => {
+    try {
+      const { q, limit } = req.query;
+      if (!q || typeof q !== 'string') {
+        return res.status(400).json({ message: "Query parameter 'q' is required" });
+      }
+      
+      const results = await storage.searchIGDBGames(q, limit ? parseInt(limit as string) : 20);
+      res.json(results);
+    } catch (error) {
+      console.error("Error searching IGDB games:", error);
+      res.status(500).json({ message: "Failed to search games" });
+    }
+  });
+
+  app.post("/api/games/from-igdb", isAuthenticated, async (req, res) => {
+    try {
+      const { igdbId } = req.body;
+      if (!igdbId) {
+        return res.status(400).json({ message: "IGDB ID is required" });
+      }
+
+      // Check if game already exists
+      const existingGame = await storage.getGameByIGDBId(igdbId);
+      if (existingGame) {
+        return res.json(existingGame);
+      }
+
+      // Create new game from IGDB data
+      const newGame = await storage.createGameFromIGDB(igdbId);
+      res.json(newGame);
+    } catch (error) {
+      console.error("Error creating game from IGDB:", error);
+      res.status(500).json({ message: "Failed to create game from IGDB data" });
+    }
+  });
+
+  app.post("/api/admin/update-sample-games", isAuthenticated, async (req, res) => {
+    try {
+      await storage.updateSampleGamesWithIGDB();
+      res.json({ message: "Sample games updated with IGDB data" });
+    } catch (error) {
+      console.error("Error updating sample games:", error);
+      res.status(500).json({ message: "Failed to update sample games" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

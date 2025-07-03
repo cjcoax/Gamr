@@ -21,6 +21,7 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, asc, and, or, like, sql, count } from "drizzle-orm";
+import { igdbService, type IGDBGame, type IGDBSearchResult } from "./igdb";
 
 export interface IStorage {
   // User operations (mandatory for Replit Auth)
@@ -66,6 +67,12 @@ export interface IStorage {
   isFollowing(followerId: string, followingId: string): Promise<boolean>;
   getUserFollowers(userId: string): Promise<User[]>;
   getUserFollowing(userId: string): Promise<User[]>;
+
+  // IGDB integration operations
+  searchIGDBGames(query: string, limit?: number): Promise<IGDBSearchResult[]>;
+  createGameFromIGDB(igdbId: number): Promise<Game>;
+  getGameByIGDBId(igdbId: number): Promise<Game | undefined>;
+  updateSampleGamesWithIGDB(): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -496,6 +503,93 @@ export class DatabaseStorage implements IStorage {
       .innerJoin(userFollows, eq(userFollows.followingId, users.id))
       .where(eq(userFollows.followerId, userId));
   }
+
+  // IGDB integration methods
+  async searchIGDBGames(query: string, limit = 20): Promise<IGDBSearchResult[]> {
+    return igdbService.searchGames(query, limit);
+  }
+
+  async getGameByIGDBId(igdbId: number): Promise<Game | undefined> {
+    const [game] = await db.select().from(games).where(eq(games.igdbId, igdbId));
+    return game;
+  }
+
+  async createGameFromIGDB(igdbId: number): Promise<Game> {
+    const igdbGame = await igdbService.getGameDetails(igdbId);
+    if (!igdbGame) {
+      throw new Error(`Game with IGDB ID ${igdbId} not found`);
+    }
+
+    const gameData: InsertGame = {
+      igdbId: igdbGame.id,
+      title: igdbGame.name,
+      description: igdbGame.summary || null,
+      coverImageUrl: igdbGame.cover?.url || null,
+      screenshotUrls: igdbGame.screenshots?.map(s => s.url) || null,
+      genre: igdbGame.genres?.[0]?.name || null,
+      platform: igdbGame.platforms?.map(p => p.name).join(', ') || null,
+      developer: igdbGame.involved_companies?.find(c => c.developer)?.company.name || null,
+      publisher: igdbGame.involved_companies?.find(c => c.publisher)?.company.name || null,
+      releaseDate: igdbGame.first_release_date ? new Date(igdbGame.first_release_date * 1000) : null,
+      igdbRating: igdbGame.rating ? Math.round(igdbGame.rating) / 20 : null, // Convert 0-100 to 0-5
+      isRetro: igdbGame.first_release_date ? (igdbGame.first_release_date < Date.now() / 1000 - (15 * 365 * 24 * 60 * 60)) : false,
+    };
+
+    const [newGame] = await db.insert(games).values(gameData).returning();
+    return newGame;
+  }
+
+  async updateSampleGamesWithIGDB(): Promise<void> {
+    try {
+      // Update Skyrim
+      const skyrimSearch = await igdbService.searchGames("The Elder Scrolls V Skyrim", 1);
+      if (skyrimSearch.length > 0) {
+        const skyrimIGDB = await igdbService.getGameDetails(skyrimSearch[0].id);
+        if (skyrimIGDB) {
+          await db.update(games)
+            .set({
+              igdbId: skyrimIGDB.id,
+              description: skyrimIGDB.summary || null,
+              coverImageUrl: skyrimIGDB.cover?.url || null,
+              screenshotUrls: skyrimIGDB.screenshots?.map(s => s.url) || null,
+              genre: skyrimIGDB.genres?.[0]?.name || null,
+              platform: skyrimIGDB.platforms?.map(p => p.name).join(', ') || null,
+              developer: skyrimIGDB.involved_companies?.find(c => c.developer)?.company.name || null,
+              publisher: skyrimIGDB.involved_companies?.find(c => c.publisher)?.company.name || null,
+              releaseDate: skyrimIGDB.first_release_date ? new Date(skyrimIGDB.first_release_date * 1000) : null,
+              igdbRating: skyrimIGDB.rating ? Math.round(skyrimIGDB.rating) / 20 : null,
+            })
+            .where(eq(games.title, "The Elder Scrolls V: Skyrim"));
+        }
+      }
+
+      // Update Stardew Valley
+      const stardewSearch = await igdbService.searchGames("Stardew Valley", 1);
+      if (stardewSearch.length > 0) {
+        const stardewIGDB = await igdbService.getGameDetails(stardewSearch[0].id);
+        if (stardewIGDB) {
+          await db.update(games)
+            .set({
+              igdbId: stardewIGDB.id,
+              description: stardewIGDB.summary || null,
+              coverImageUrl: stardewIGDB.cover?.url || null,
+              screenshotUrls: stardewIGDB.screenshots?.map(s => s.url) || null,
+              genre: stardewIGDB.genres?.[0]?.name || null,
+              platform: stardewIGDB.platforms?.map(p => p.name).join(', ') || null,
+              developer: stardewIGDB.involved_companies?.find(c => c.developer)?.company.name || null,
+              publisher: stardewIGDB.involved_companies?.find(c => c.publisher)?.company.name || null,
+              releaseDate: stardewIGDB.first_release_date ? new Date(stardewIGDB.first_release_date * 1000) : null,
+              igdbRating: stardewIGDB.rating ? Math.round(stardewIGDB.rating) / 20 : null,
+            })
+            .where(eq(games.title, "Stardew Valley"));
+        }
+      }
+
+      console.log("Updated sample games with IGDB data");
+    } catch (error) {
+      console.error("Error updating sample games with IGDB data:", error);
+    }
+  }
 }
 
 export const storage = new DatabaseStorage();
@@ -550,5 +644,10 @@ async function seedSampleGames() {
   }
 }
 
-// Call seed function when storage is initialized
-seedSampleGames();
+// Call seed function when storage is initialized and update with IGDB data
+seedSampleGames().then(() => {
+  // Update sample games with IGDB data after seeding
+  setTimeout(() => {
+    storage.updateSampleGamesWithIGDB().catch(console.error);
+  }, 3000); // Wait 3 seconds for server to fully start
+}).catch(console.error);

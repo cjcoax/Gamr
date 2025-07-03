@@ -50,6 +50,7 @@ export const users = pgTable("users", {
 // Games table
 export const games = pgTable("games", {
   id: serial("id").primaryKey(),
+  igdbId: integer("igdb_id").unique(), // IGDB game ID for syncing
   title: varchar("title", { length: 255 }).notNull(),
   description: text("description"),
   coverImageUrl: varchar("cover_image_url"),
@@ -60,6 +61,7 @@ export const games = pgTable("games", {
   developer: varchar("developer", { length: 255 }),
   publisher: varchar("publisher", { length: 255 }),
   metacriticScore: integer("metacritic_score"),
+  igdbRating: real("igdb_rating"), // Rating from IGDB
   isRetro: boolean("is_retro").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
