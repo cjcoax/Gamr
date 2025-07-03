@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Camera, X } from "lucide-react";
+import { Camera, X, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 import { apiRequest } from "@/lib/queryClient";
@@ -27,11 +27,13 @@ interface EditProfileDialogProps {
 
 export default function EditProfileDialog({ open, onOpenChange, user }: EditProfileDialogProps) {
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     username: user.username || "",
     bio: user.bio || "",
     profileImageUrl: user.profileImageUrl || "",
   });
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
 
   const updateProfileMutation = useMutation({
     mutationFn: async (profileData: typeof formData) => {
@@ -65,6 +67,40 @@ export default function EditProfileDialog({ open, onOpenChange, user }: EditProf
     },
   });
 
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Invalid file type",
+          description: "Please select an image file",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Validate file size (5MB limit)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Please select an image under 5MB",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Create a preview URL
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const dataUrl = event.target?.result as string;
+        setUploadedImage(dataUrl);
+        setFormData(prev => ({ ...prev, profileImageUrl: dataUrl }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -95,6 +131,10 @@ export default function EditProfileDialog({ open, onOpenChange, user }: EditProf
 
   const removeProfileImage = () => {
     setFormData(prev => ({ ...prev, profileImageUrl: "" }));
+    setUploadedImage(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   return (
@@ -112,11 +152,11 @@ export default function EditProfileDialog({ open, onOpenChange, user }: EditProf
           <div className="text-center">
             <div className="relative inline-block">
               <img 
-                src={formData.profileImageUrl || "https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=100&h=100&fit=crop&crop=face"} 
+                src={uploadedImage || formData.profileImageUrl || "https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=100&h=100&fit=crop&crop=face"} 
                 alt="Profile" 
                 className="w-20 h-20 rounded-full object-cover border-2 border-gaming-purple mx-auto"
               />
-              {formData.profileImageUrl && (
+              {(formData.profileImageUrl || uploadedImage) && (
                 <Button
                   type="button"
                   variant="destructive"
@@ -128,21 +168,53 @@ export default function EditProfileDialog({ open, onOpenChange, user }: EditProf
                 </Button>
               )}
             </div>
-            <div className="mt-2">
-              <Label htmlFor="profileImageUrl" className="text-sm font-medium text-slate-300">
-                Profile Image URL
-              </Label>
-              <Input
-                id="profileImageUrl"
-                type="url"
-                value={formData.profileImageUrl}
-                onChange={(e) => handleChange("profileImageUrl", e.target.value)}
-                className="bg-gaming-dark border-slate-600 text-white mt-1"
-                placeholder="https://example.com/your-photo.jpg"
-              />
-              <p className="text-xs text-slate-400 mt-1">
-                Enter a URL to an image hosted online (Unsplash, Imgur, etc.)
-              </p>
+            
+            <div className="mt-4 space-y-3">
+              {/* File Upload */}
+              <div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full border-slate-600 text-slate-300 hover:bg-slate-800"
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  Upload from Device
+                </Button>
+                <p className="text-xs text-slate-400 mt-1">
+                  Select an image file (max 5MB)
+                </p>
+              </div>
+
+              {/* URL Input */}
+              <div className="text-center text-slate-400 text-sm">or</div>
+              <div>
+                <Label htmlFor="profileImageUrl" className="text-sm font-medium text-slate-300">
+                  Use Image URL
+                </Label>
+                <Input
+                  id="profileImageUrl"
+                  type="url"
+                  value={uploadedImage ? "" : formData.profileImageUrl}
+                  onChange={(e) => {
+                    setUploadedImage(null);
+                    handleChange("profileImageUrl", e.target.value);
+                  }}
+                  disabled={!!uploadedImage}
+                  className="bg-gaming-dark border-slate-600 text-white mt-1 disabled:opacity-50"
+                  placeholder="https://example.com/your-photo.jpg"
+                />
+                <p className="text-xs text-slate-400 mt-1">
+                  Enter a URL to an image hosted online
+                </p>
+              </div>
             </div>
           </div>
 

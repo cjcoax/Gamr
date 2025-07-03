@@ -324,6 +324,7 @@ export class DatabaseStorage implements IStorage {
         rating: reviews.rating,
         title: reviews.title,
         content: reviews.content,
+        imageUrl: reviews.imageUrl,
         spoilers: reviews.spoilers,
         recommendedFor: reviews.recommendedFor,
         createdAt: reviews.createdAt,
@@ -346,6 +347,7 @@ export class DatabaseStorage implements IStorage {
         rating: reviews.rating,
         title: reviews.title,
         content: reviews.content,
+        imageUrl: reviews.imageUrl,
         spoilers: reviews.spoilers,
         recommendedFor: reviews.recommendedFor,
         createdAt: reviews.createdAt,
@@ -481,3 +483,56 @@ export class DatabaseStorage implements IStorage {
 }
 
 export const storage = new DatabaseStorage();
+
+// Seed sample games if they don't exist
+async function seedSampleGames() {
+  try {
+    const existingGames = await storage.getAllGames(10);
+    if (existingGames.length === 0) {
+      console.log("Seeding sample games...");
+      
+      // Add Skyrim
+      await storage.createGame({
+        title: "The Elder Scrolls V: Skyrim",
+        description: "The Elder Scrolls V: Skyrim is an action role-playing game set in an open world environment. Players take on the role of a Dragonborn, a prophesied figure with the power to combat dragons that have returned to the world.",
+        coverImageUrl: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop",
+        screenshotUrls: [
+          "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=450&fit=crop",
+          "https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=800&h=450&fit=crop",
+          "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=800&h=450&fit=crop"
+        ],
+        genre: "Action RPG",
+        platform: "PC, PlayStation, Xbox, Nintendo Switch",
+        releaseDate: new Date("2011-11-11"),
+        developer: "Bethesda Game Studios",
+        publisher: "Bethesda Softworks",
+        isRetro: false
+      });
+
+      // Add Stardew Valley
+      await storage.createGame({
+        title: "Stardew Valley",
+        description: "Stardew Valley is a simulation role-playing game where you inherit your grandfather's old farm plot in Stardew Valley. Armed with hand-me-down tools and a few coins, you set out to begin your new life.",
+        coverImageUrl: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=600&fit=crop",
+        screenshotUrls: [
+          "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=450&fit=crop",
+          "https://images.unsplash.com/photo-1574177565735-66b9f8e7c9c2?w=800&h=450&fit=crop",
+          "https://images.unsplash.com/photo-1542838686-67ce30f7c475?w=800&h=450&fit=crop"
+        ],
+        genre: "Simulation, Indie",
+        platform: "PC, PlayStation, Xbox, Nintendo Switch, Mobile",
+        releaseDate: new Date("2016-02-26"),
+        developer: "ConcernedApe",
+        publisher: "ConcernedApe",
+        isRetro: false
+      });
+
+      console.log("Sample games seeded successfully!");
+    }
+  } catch (error) {
+    console.error("Error seeding sample games:", error);
+  }
+}
+
+// Call seed function when storage is initialized
+seedSampleGames();

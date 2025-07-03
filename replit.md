@@ -1,8 +1,8 @@
-# GameShelf - Personal Gaming Library
+# Gamr - Personal Gaming Library
 
 ## Overview
 
-GameShelf is a full-stack web application that serves as a personal gaming library and social platform. Users can track, rate, and discover games while connecting with other gaming enthusiasts. The application features a mobile-first design with a modern gaming aesthetic and comprehensive game management capabilities.
+Gamr is a full-stack web application that serves as a personal gaming library and social platform. Users can track, rate, and discover games while connecting with other gaming enthusiasts. The application features a mobile-first design with a modern gaming aesthetic and comprehensive game management capabilities.
 
 ## System Architecture
 

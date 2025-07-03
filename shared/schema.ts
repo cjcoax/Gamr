@@ -78,6 +78,7 @@ export const reviews = pgTable("reviews", {
   rating: real("rating").notNull(), // 1-5 stars
   title: varchar("title", { length: 255 }),
   content: text("content"),
+  imageUrl: varchar("image_url"),
   spoilers: boolean("spoilers").default(false),
   recommendedFor: text("recommended_for"), // comma-separated tags
   createdAt: timestamp("created_at").defaultNow(),

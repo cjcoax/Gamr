@@ -268,12 +268,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/reviews", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const reviewData = insertReviewSchema.parse({
-        ...req.body,
+      const reviewData = z.object({
+        gameId: z.number(),
+        rating: z.number().min(1).max(5),
+        content: z.string().optional(),
+        imageUrl: z.string().optional(),
+      }).parse(req.body);
+
+      const review = await storage.createReview({
+        ...reviewData,
         userId,
       });
-
-      const review = await storage.createReview(reviewData);
 
       // Create activity
       await storage.createActivity({
@@ -282,7 +287,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         type: "reviewed",
         metadata: { 
           rating: reviewData.rating,
-          title: reviewData.title,
         },
       });
 
