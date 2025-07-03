@@ -33,7 +33,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updateData = z.object({
         username: z.string().optional(),
         bio: z.string().optional(),
-        profileImageUrl: z.string().url().optional(),
+        profileImageUrl: z.union([z.string().url(), z.literal(""), z.null(), z.undefined()]).optional(),
         steamUsername: z.string().optional(),
         epicUsername: z.string().optional(),
         battlenetUsername: z.string().optional(),
