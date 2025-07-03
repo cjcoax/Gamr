@@ -121,6 +121,7 @@ Changelog:
 - July 03, 2025. Added "Add photo" button to User Media tab on game detail pages
 - July 03, 2025. Added 8 new games using IGDB API: Fortnite, Infinity Nikki, Avowed, Baldur's Gate 3, Overwatch 2, Abiotic Factor, Diablo IV, and Grand Theft Auto VI (manual entry for unreleased game)
 - July 03, 2025. Updated GTA VI from manual entry to authentic IGDB data with proper metadata
+- July 03, 2025. Enhanced Search tab with context-aware help text - different placeholders and empty state messages for Games vs Users tabs
 ```
 
 ## User Preferences
