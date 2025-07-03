@@ -49,20 +49,19 @@ export default function GameDetail() {
   };
 
   const { data: game, isLoading } = useQuery({
-    queryKey: ["/api/games", id],
+    queryKey: [`/api/games/${id}`],
     enabled: !!id,
   });
 
-  // Debug logging
-  console.log("GameDetail debug:", { id, isLoading, game });
+
 
   const { data: reviews = [] } = useQuery({
-    queryKey: ["/api/games", id, "reviews"],
+    queryKey: [`/api/games/${id}/reviews`],
     enabled: !!id,
   });
 
   const { data: posts = [] } = useQuery({
-    queryKey: ["/api/games", id, "posts"],
+    queryKey: [`/api/games/${id}/posts`],
     enabled: !!id,
   });
 
@@ -239,7 +238,10 @@ export default function GameDetail() {
     );
   }
 
-  if (!game || !game.id || !game.title) {
+  // Type assertion to fix TypeScript issues
+  const gameData = game as any;
+  
+  if (!gameData || !gameData.id || !gameData.title) {
     return (
       <div className="min-h-screen bg-gaming-dark text-slate-50">
         <div className="max-w-sm mx-auto p-4 text-center">
@@ -252,9 +254,9 @@ export default function GameDetail() {
     );
   }
 
-  const averageRating = game.averageRating || 0;
-  const reviewCount = game.reviewCount || 0;
-  const userReview = reviews.find((review: any) => review.user?.id === user?.id);
+  const averageRating = gameData.averageRating || 0;
+  const reviewCount = gameData.reviewCount || 0;
+  const userReview = (reviews as any[]).find((review: any) => review.user?.id === user?.id);
 
   return (
     <div className="min-h-screen bg-gaming-dark text-slate-50">
@@ -271,7 +273,7 @@ export default function GameDetail() {
               <ArrowLeft className="w-5 h-5 text-slate-400" />
             </Button>
             <h1 className="text-lg font-semibold text-white truncate mx-4">
-              {game.title}
+              {gameData.title}
             </h1>
             <div className="w-9"></div>
           </div>
@@ -281,13 +283,13 @@ export default function GameDetail() {
           {/* Hero Image */}
           <div className="relative">
             <img
-              src={game.coverImageUrl || "https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=400&h=600&fit=crop"}
-              alt={game.title}
+              src={gameData.coverImageUrl || "https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=400&h=600&fit=crop"}
+              alt={gameData.title}
               className="w-full h-64 object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-gaming-dark/80 to-transparent"></div>
             <div className="absolute bottom-4 left-4 right-4">
-              <h2 className="text-2xl font-bold text-white mb-2">{game.title}</h2>
+              <h2 className="text-2xl font-bold text-white mb-2">{gameData.title}</h2>
               <div className="flex items-center space-x-4 text-sm text-slate-300">
                 <div className="flex items-center space-x-1">
                   {renderStars(Math.round(averageRating))}
@@ -301,7 +303,7 @@ export default function GameDetail() {
 
           {/* Action Buttons */}
           <div className="px-4 py-4 space-y-3">
-            {!game.userGame ? (
+            {!gameData.userGame ? (
               <div className="grid grid-cols-3 gap-2">
                 <Button
                   onClick={() => addToLibraryMutation.mutate("want_to_play")}
@@ -328,7 +330,7 @@ export default function GameDetail() {
             ) : (
               <div className="text-center">
                 <Badge className="bg-gaming-purple text-white">
-                  {game.userGame.status.replace("_", " ").toUpperCase()}
+                  {gameData.userGame.status.replace("_", " ").toUpperCase()}
                 </Badge>
               </div>
             )}
@@ -344,7 +346,7 @@ export default function GameDetail() {
                 </DialogTrigger>
                 <DialogContent className="bg-gaming-card border-slate-700 text-white max-w-md mx-auto">
                   <DialogHeader>
-                    <DialogTitle className="text-white">Review {game.title}</DialogTitle>
+                    <DialogTitle className="text-white">Review {gameData.title}</DialogTitle>
                     <DialogDescription className="text-slate-400">
                       Share your rating and thoughts about this game
                     </DialogDescription>
@@ -365,7 +367,7 @@ export default function GameDetail() {
                         value={reviewText}
                         onChange={(e) => setReviewText(e.target.value)}
                         className="bg-gaming-dark border-slate-600 text-white mt-1"
-                        placeholder="Share your thoughts about this game..."
+                        placeholder="Share your thoughts about this gameData..."
                         rows={4}
                       />
                     </div>
@@ -445,28 +447,28 @@ export default function GameDetail() {
                     <div>
                       <h3 className="text-sm font-medium text-slate-400 mb-1">Description</h3>
                       <p className="text-slate-300 text-sm leading-relaxed">
-                        {game.description || "No description available."}
+                        {gameData.description || "No description available."}
                       </p>
                     </div>
                     
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
                         <span className="text-slate-400">Genre:</span>
-                        <p className="text-white">{game.genre || "Unknown"}</p>
+                        <p className="text-white">{gameData.genre || "Unknown"}</p>
                       </div>
                       <div>
                         <span className="text-slate-400">Platform:</span>
-                        <p className="text-white">{game.platform || "Unknown"}</p>
+                        <p className="text-white">{gameData.platform || "Unknown"}</p>
                       </div>
                       <div>
                         <span className="text-slate-400">Developer:</span>
-                        <p className="text-white">{game.developer || "Unknown"}</p>
+                        <p className="text-white">{gameData.developer || "Unknown"}</p>
                       </div>
                       <div>
                         <span className="text-slate-400">Release Date:</span>
                         <p className="text-white">
-                          {game.releaseDate 
-                            ? new Date(game.releaseDate).getFullYear()
+                          {gameData.releaseDate 
+                            ? new Date(gameData.releaseDate).getFullYear()
                             : "Unknown"
                           }
                         </p>
@@ -491,15 +493,15 @@ export default function GameDetail() {
                         </div>
                         
                         {/* IGDB Rating */}
-                        {game.igdbRating && (
+                        {gameData.igdbRating && (
                           <div className="flex items-center justify-between">
                             <span className="text-sm text-slate-400">IGDB Community</span>
                             <div className="flex items-center space-x-2">
                               <div className="flex">
-                                {renderStarRating(game.igdbRating, false)}
+                                {renderStarRating(gameData.igdbRating, false)}
                               </div>
                               <span className="text-sm text-white">
-                                {game.igdbRating.toFixed(1)} / 5.0
+                                {gameData.igdbRating.toFixed(1)} / 5.0
                               </span>
                             </div>
                           </div>
@@ -510,16 +512,16 @@ export default function GameDetail() {
                 </Card>
 
                 {/* Screenshots */}
-                {game.screenshotUrls && game.screenshotUrls.length > 0 && (
+                {gameData.screenshotUrls && gameData.screenshotUrls.length > 0 && (
                   <Card className="bg-gaming-card border-slate-700">
                     <CardContent className="p-4">
                       <h3 className="text-sm font-medium text-slate-400 mb-3">Screenshots</h3>
                       <div className="grid grid-cols-2 gap-2">
-                        {game.screenshotUrls.map((url: string, index: number) => (
+                        {gameData.screenshotUrls.map((url: string, index: number) => (
                           <img
                             key={index}
                             src={url}
-                            alt={`${game.title} screenshot ${index + 1}`}
+                            alt={`${gameData.title} screenshot ${index + 1}`}
                             className="w-full h-24 object-cover rounded border border-slate-600"
                           />
                         ))}
