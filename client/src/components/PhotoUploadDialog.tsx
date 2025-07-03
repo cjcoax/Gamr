@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ export default function PhotoUploadDialog({ open, onOpenChange, gameId }: PhotoU
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const uploadMutation = useMutation({
     mutationFn: async ({ imageData, fileName }: { imageData: string; fileName: string }) => {
@@ -138,17 +139,19 @@ export default function PhotoUploadDialog({ open, onOpenChange, gameId }: PhotoU
                 <p className="text-slate-400 mb-2">Select a photo to upload</p>
                 <p className="text-xs text-slate-500 mb-4">JPG, PNG, GIF up to 10MB</p>
                 <Input
+                  ref={fileInputRef}
                   type="file"
                   accept="image/*"
                   onChange={handleFileSelect}
                   className="hidden"
-                  id="photo-upload"
                 />
-                <label htmlFor="photo-upload">
-                  <Button variant="outline" className="cursor-pointer">
-                    Choose File
-                  </Button>
-                </label>
+                <Button
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="border-slate-600 text-slate-300 hover:bg-slate-800"
+                >
+                  Choose File
+                </Button>
               </div>
             </div>
           ) : (
