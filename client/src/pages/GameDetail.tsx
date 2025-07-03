@@ -24,6 +24,11 @@ export default function GameDetail() {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Type guard for user
+  const isValidUser = (user: any): user is { id: string; [key: string]: any } => {
+    return user && typeof user === 'object' && 'id' in user;
+  };
+
   // Review dialog state
   const [showReviewDialog, setShowReviewDialog] = useState(false);
   const [reviewRating, setReviewRating] = useState(0);
@@ -258,7 +263,9 @@ export default function GameDetail() {
   const reviewCount = gameData.reviewCount || 0;
   const reviewsArray = reviews as any[];
   const postsArray = posts as any[];
-  const userReview = reviewsArray.find((review: any) => review.user?.id === user?.id);
+  const userReview = reviewsArray.find((review: any) => 
+    review.user?.id === (isValidUser(user) ? user.id : null)
+  );
 
   return (
     <div className="min-h-screen bg-gaming-dark text-slate-50">
@@ -625,7 +632,7 @@ export default function GameDetail() {
 
               <TabsContent value="posts" className="space-y-4 mt-4">
                 {/* Create Post Button */}
-                {user && (
+                {isValidUser(user) && (
                   <div className="flex justify-end">
                     <Dialog open={showPostDialog} onOpenChange={setShowPostDialog}>
                       <DialogTrigger asChild>
@@ -636,7 +643,7 @@ export default function GameDetail() {
                       </DialogTrigger>
                       <DialogContent className="bg-gaming-card border-slate-700 text-white max-w-md mx-auto">
                         <DialogHeader>
-                          <DialogTitle className="text-white">Create Post about {game?.title}</DialogTitle>
+                          <DialogTitle className="text-white">Create Post about {(game as any)?.title}</DialogTitle>
                           <DialogDescription className="text-slate-400">
                             Share your thoughts, progress, or screenshots about this game
                           </DialogDescription>

@@ -112,11 +112,20 @@ export default function EditProfileDialog({ open, onOpenChange, user }: EditProf
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Clean up the data - only send fields that have values
-    const cleanData: any = {};
-    if (formData.username.trim()) cleanData.username = formData.username.trim();
-    if (formData.bio.trim()) cleanData.bio = formData.bio.trim();
-    if (formData.profileImageUrl.trim()) cleanData.profileImageUrl = formData.profileImageUrl.trim();
+    // Clean up the data - send all fields, empty strings for fields that were cleared
+    const cleanData: any = {
+      username: formData.username.trim(),
+      bio: formData.bio.trim(),
+      profileImageUrl: formData.profileImageUrl.trim(),
+      steamUsername: formData.steamUsername.trim(),
+      epicUsername: formData.epicUsername.trim(),
+      battlenetUsername: formData.battlenetUsername.trim(),
+      psnUsername: formData.psnUsername.trim(),
+      xboxUsername: formData.xboxUsername.trim(),
+      nintendoUsername: formData.nintendoUsername.trim(),
+      eaUsername: formData.eaUsername.trim(),
+      discordUsername: formData.discordUsername.trim(),
+    };
     
     updateProfileMutation.mutate(cleanData);
   };
@@ -155,7 +164,7 @@ export default function EditProfileDialog({ open, onOpenChange, user }: EditProf
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="bg-gaming-card border-slate-700 text-white max-w-md mx-auto">
+      <DialogContent className="bg-gaming-card border-slate-700 text-white max-w-md mx-auto max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-white">Edit Profile</DialogTitle>
           <DialogDescription className="text-slate-400">
