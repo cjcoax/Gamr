@@ -77,6 +77,7 @@ export interface IStorage {
   getGameByIGDBId(igdbId: number): Promise<Game | undefined>;
   updateSampleGamesWithIGDB(): Promise<void>;
   addNewGamesFromIGDB(): Promise<void>;
+  updateGTAVIWithIGDBData(): Promise<void>;
 
   // Game posts operations
   getGamePosts(gameId: number, limit?: number): Promise<(GamePost & { user: User })[]>;
@@ -670,22 +671,31 @@ export class DatabaseStorage implements IStorage {
           } else {
             console.log(`Could not find IGDB data for: ${gameTitle}`);
             
-            // Special handling for GTA VI since it's not in IGDB yet
+            // Try alternative search terms for games that might be harder to find
             if (gameTitle === "Grand Theft Auto VI") {
-              try {
-                await db.insert(games).values({
-                  title: "Grand Theft Auto VI",
-                  description: "Grand Theft Auto VI is an upcoming action-adventure game in development by Rockstar Games. It is due to be the eighth main Grand Theft Auto game, following Grand Theft Auto V (2013), and the sixteenth instalment overall.",
-                  genre: "Action-Adventure",
-                  platform: "PlayStation 5, Xbox Series X/S",
-                  developer: "Rockstar Games",
-                  publisher: "Rockstar Games",
-                  releaseDate: new Date("2025-12-31"),
-                  isRetro: false,
-                });
-                console.log("Added game: Grand Theft Auto VI (manual entry)");
-              } catch (error) {
-                console.error("Error adding GTA VI manually:", error);
+              const altSearchResults = await igdbService.searchGames("Grand Theft Auto 6", 5);
+              if (altSearchResults.length > 0) {
+                const gameData = await igdbService.getGameDetails(altSearchResults[0].id);
+                if (gameData) {
+                  await db.insert(games).values({
+                    igdbId: gameData.id,
+                    title: gameData.name,
+                    description: gameData.summary || null,
+                    coverImageUrl: gameData.cover?.url ? igdbService['formatImageUrl'](gameData.cover.url) : null,
+                    screenshotUrls: gameData.screenshots?.map(s => igdbService['formatImageUrl'](s.url)) || null,
+                    genre: gameData.genres?.[0]?.name || null,
+                    platform: gameData.platforms?.map(p => p.name).join(', ') || null,
+                    developer: gameData.involved_companies?.find(c => c.developer)?.company.name || null,
+                    publisher: gameData.involved_companies?.find(c => c.publisher)?.company.name || null,
+                    releaseDate: gameData.first_release_date ? new Date(gameData.first_release_date * 1000) : null,
+                    igdbRating: gameData.rating ? Math.round(gameData.rating) / 20 : null,
+                    isRetro: gameData.first_release_date ? 
+                      (new Date(gameData.first_release_date * 1000).getFullYear() < 2015) : false,
+                  });
+                  console.log(`Added game: ${gameData.name} (found with alternative search)`);
+                }
+              } else {
+                console.log("Could not find GTA VI even with alternative search terms");
               }
             }
           }
@@ -701,6 +711,43 @@ export class DatabaseStorage implements IStorage {
       console.log("Finished adding new games from IGDB");
     } catch (error) {
       console.error("Error adding new games from IGDB:", error);
+    }
+  }
+
+  async updateGTAVIWithIGDBData(): Promise<void> {
+    try {
+      // Search for GTA VI using alternative search terms
+      const searchResults = await igdbService.searchGames("Grand Theft Auto 6", 10);
+      
+      if (searchResults.length > 0) {
+        const gameData = await igdbService.getGameDetails(searchResults[0].id);
+        
+        if (gameData) {
+          // Update the existing GTA VI entry with real IGDB data
+          await db
+            .update(games)
+            .set({
+              igdbId: gameData.id,
+              title: gameData.name,
+              description: gameData.summary || null,
+              coverImageUrl: gameData.cover?.url ? igdbService['formatImageUrl'](gameData.cover.url) : null,
+              screenshotUrls: gameData.screenshots?.map(s => igdbService['formatImageUrl'](s.url)) || null,
+              genre: gameData.genres?.[0]?.name || null,
+              platform: gameData.platforms?.map(p => p.name).join(', ') || null,
+              developer: gameData.involved_companies?.find(c => c.developer)?.company.name || null,
+              publisher: gameData.involved_companies?.find(c => c.publisher)?.company.name || null,
+              releaseDate: gameData.first_release_date ? new Date(gameData.first_release_date * 1000) : null,
+              igdbRating: gameData.rating ? Math.round(gameData.rating) / 20 : null,
+            })
+            .where(eq(games.title, "Grand Theft Auto VI"));
+          
+          console.log(`Updated GTA VI with real IGDB data: ${gameData.name}`);
+        }
+      } else {
+        console.log("Could not find GTA VI in IGDB search");
+      }
+    } catch (error) {
+      console.error("Error updating GTA VI with IGDB data:", error);
     }
   }
 
@@ -851,6 +898,9 @@ seedSampleGames().then(() => {
     storage.updateSampleGamesWithIGDB().then(() => {
       // Add new games from IGDB after updating existing ones
       return storage.addNewGamesFromIGDB();
+    }).then(() => {
+      // Update GTA VI with real IGDB data
+      return storage.updateGTAVIWithIGDBData();
     }).catch(console.error);
   }, 3000); // Wait 3 seconds for server to fully start
 }).catch(console.error);
