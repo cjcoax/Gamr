@@ -30,6 +30,10 @@ export default function GameDetail() {
   const [reviewText, setReviewText] = useState("");
   const [reviewImage, setReviewImage] = useState<string | null>(null);
 
+  // Post dialog state
+  const [showPostDialog, setShowPostDialog] = useState(false);
+  const [postContent, setPostContent] = useState("");
+
   const { data: game, isLoading } = useQuery({
     queryKey: ["/api/games", id],
     enabled: !!id,
@@ -37,6 +41,11 @@ export default function GameDetail() {
 
   const { data: reviews = [] } = useQuery({
     queryKey: ["/api/games", id, "reviews"],
+    enabled: !!id,
+  });
+
+  const { data: posts = [] } = useQuery({
+    queryKey: ["/api/games", id, "posts"],
     enabled: !!id,
   });
 
@@ -112,6 +121,40 @@ export default function GameDetail() {
       toast({
         title: "Error",
         description: "Failed to submit review",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const createPostMutation = useMutation({
+    mutationFn: async () => {
+      await apiRequest("POST", "/api/posts", {
+        gameId: parseInt(id!),
+        content: postContent,
+        postType: "text",
+      });
+    },
+    onSuccess: () => {
+      toast({ title: "Success", description: "Post created successfully!" });
+      setShowPostDialog(false);
+      setPostContent("");
+      queryClient.invalidateQueries({ queryKey: ["/api/games", id, "posts"] });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to create post",
         variant: "destructive",
       });
     },
@@ -366,12 +409,15 @@ export default function GameDetail() {
           {/* Tabbed Content */}
           <div className="px-4">
             <Tabs defaultValue="info" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 bg-gaming-card border-slate-700">
+              <TabsList className="grid w-full grid-cols-3 bg-gaming-card border-slate-700">
                 <TabsTrigger value="info" className="data-[state=active]:bg-gaming-purple data-[state=active]:text-white">
                   Game Info
                 </TabsTrigger>
                 <TabsTrigger value="media" className="data-[state=active]:bg-gaming-purple data-[state=active]:text-white">
                   User Media
+                </TabsTrigger>
+                <TabsTrigger value="posts" className="data-[state=active]:bg-gaming-purple data-[state=active]:text-white">
+                  Posts
                 </TabsTrigger>
               </TabsList>
               
@@ -549,6 +595,101 @@ export default function GameDetail() {
                           <Image className="w-12 h-12 text-slate-600 mx-auto mb-3" />
                           <p className="text-sm text-slate-400 mb-2">No user media yet</p>
                           <p className="text-xs text-slate-500">Photos from reviews will appear here</p>
+                        </div>
+                      );
+                    })()}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="posts" className="space-y-4 mt-4">
+                {/* Create Post Button */}
+                {user && (
+                  <div className="flex justify-end">
+                    <Dialog open={showPostDialog} onOpenChange={setShowPostDialog}>
+                      <DialogTrigger asChild>
+                        <Button className="bg-gaming-purple hover:bg-gaming-violet text-white">
+                          <Plus className="w-4 h-4 mr-2" />
+                          Create Post
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="bg-gaming-card border-slate-700 text-white max-w-md mx-auto">
+                        <DialogHeader>
+                          <DialogTitle className="text-white">Create Post about {game?.title}</DialogTitle>
+                          <DialogDescription className="text-slate-400">
+                            Share your thoughts, progress, or screenshots about this game
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="post-content" className="text-slate-300">Content</Label>
+                            <Textarea
+                              id="post-content"
+                              placeholder="What's happening in your playthrough?"
+                              value={postContent}
+                              onChange={(e) => setPostContent(e.target.value)}
+                              className="bg-slate-800 border-slate-700 text-white resize-none"
+                              rows={4}
+                            />
+                          </div>
+                          <div className="flex justify-end space-x-2">
+                            <Button
+                              variant="outline"
+                              onClick={() => setShowPostDialog(false)}
+                              className="border-slate-700 text-slate-300 hover:bg-slate-800"
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              onClick={() => createPostMutation.mutate()}
+                              disabled={!postContent.trim() || createPostMutation.isPending}
+                              className="bg-gaming-purple hover:bg-gaming-violet text-white"
+                            >
+                              {createPostMutation.isPending ? "Posting..." : "Post"}
+                            </Button>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                )}
+
+                {/* Posts List */}
+                <Card className="bg-gaming-card border-slate-700">
+                  <CardContent className="p-4">
+                    {(() => {
+                      const gamePosts = Array.isArray(posts) ? posts : [];
+                      return gamePosts.length > 0 ? (
+                        <div className="space-y-4">
+                          <h3 className="text-sm font-medium text-slate-400 mb-3">Community Posts</h3>
+                          {gamePosts.map((post: any) => (
+                            <div key={post.id} className="border-b border-slate-700 pb-4 last:border-b-0 last:pb-0">
+                              <div className="flex items-start space-x-3">
+                                <div className="w-8 h-8 rounded-full bg-gaming-purple flex items-center justify-center">
+                                  <span className="text-white text-sm font-medium">
+                                    {post.user?.username?.[0] || post.user?.firstName?.[0] || "U"}
+                                  </span>
+                                </div>
+                                <div className="flex-1">
+                                  <div className="flex items-center space-x-2 mb-1">
+                                    <span className="text-sm font-medium text-white">
+                                      {post.user?.username || post.user?.firstName || "Anonymous"}
+                                    </span>
+                                    <span className="text-xs text-slate-500">
+                                      {new Date(post.createdAt).toLocaleDateString()}
+                                    </span>
+                                  </div>
+                                  <p className="text-sm text-slate-300">{post.content}</p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-8">
+                          <MessageSquare className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+                          <p className="text-sm text-slate-400 mb-2">No posts yet</p>
+                          <p className="text-xs text-slate-500">Be the first to share your thoughts about this game!</p>
                         </div>
                       );
                     })()}
