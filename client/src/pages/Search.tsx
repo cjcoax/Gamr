@@ -55,7 +55,10 @@ export default function Search() {
 
       {/* Search Form */}
       <div className="p-4">
-        <SearchForm onSearch={setSearchQuery} />
+        <SearchForm 
+          onSearch={setSearchQuery} 
+          placeholder={activeTab === "games" ? "Search for games..." : "Search for users..."}
+        />
       </div>
 
       {/* Search Tabs and Results */}
@@ -181,10 +184,17 @@ export default function Search() {
         {!searchQuery && (
           <div className="text-center py-8">
             <div className="w-16 h-16 bg-gaming-card rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <span className="text-4xl">🎮</span>
+              <span className="text-4xl">{activeTab === "games" ? "🎮" : "👥"}</span>
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">Discover Games</h3>
-            <p className="text-slate-400">Search for games to add to your library</p>
+            <h3 className="text-lg font-semibold text-white mb-2">
+              {activeTab === "games" ? "Discover Games" : "Find Gamers"}
+            </h3>
+            <p className="text-slate-400">
+              {activeTab === "games" 
+                ? "Search for games to add to your library" 
+                : "Search for other users to connect with"
+              }
+            </p>
           </div>
         )}
       </div>

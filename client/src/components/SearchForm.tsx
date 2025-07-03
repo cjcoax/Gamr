@@ -5,9 +5,10 @@ import { Search, X } from "lucide-react";
 
 interface SearchFormProps {
   onSearch: (query: string) => void;
+  placeholder?: string;
 }
 
-export default function SearchForm({ onSearch }: SearchFormProps) {
+export default function SearchForm({ onSearch, placeholder = "Search for games..." }: SearchFormProps) {
   const [query, setQuery] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -28,7 +29,7 @@ export default function SearchForm({ onSearch }: SearchFormProps) {
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
         <Input
           type="text"
-          placeholder="Search for games..."
+          placeholder={placeholder}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="pl-10 pr-10 bg-gaming-card border-slate-700 text-white placeholder-slate-400 focus:border-gaming-purple"
