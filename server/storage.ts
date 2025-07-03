@@ -20,7 +20,7 @@ import {
   type ActivityWithDetails,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, asc, and, or, like, sql, count } from "drizzle-orm";
+import { eq, desc, asc, and, or, like, ilike, sql, count } from "drizzle-orm";
 import { igdbService, type IGDBGame, type IGDBSearchResult } from "./igdb";
 
 export interface IStorage {
@@ -173,10 +173,10 @@ export class DatabaseStorage implements IStorage {
       .from(games)
       .where(
         or(
-          like(games.title, `%${query}%`),
-          like(games.description, `%${query}%`),
-          like(games.genre, `%${query}%`),
-          like(games.developer, `%${query}%`)
+          ilike(games.title, `%${query}%`),
+          ilike(games.description, `%${query}%`),
+          ilike(games.genre, `%${query}%`),
+          ilike(games.developer, `%${query}%`)
         )
       )
       .limit(limit)
@@ -201,6 +201,7 @@ export class DatabaseStorage implements IStorage {
     return db
       .select({
         id: games.id,
+        igdbId: games.igdbId,
         title: games.title,
         description: games.description,
         coverImageUrl: games.coverImageUrl,
@@ -211,6 +212,7 @@ export class DatabaseStorage implements IStorage {
         developer: games.developer,
         publisher: games.publisher,
         metacriticScore: games.metacriticScore,
+        igdbRating: games.igdbRating,
         isRetro: games.isRetro,
         createdAt: games.createdAt,
       })
@@ -225,6 +227,7 @@ export class DatabaseStorage implements IStorage {
     return db
       .select({
         id: games.id,
+        igdbId: games.igdbId,
         title: games.title,
         description: games.description,
         coverImageUrl: games.coverImageUrl,
@@ -235,6 +238,7 @@ export class DatabaseStorage implements IStorage {
         developer: games.developer,
         publisher: games.publisher,
         metacriticScore: games.metacriticScore,
+        igdbRating: games.igdbRating,
         isRetro: games.isRetro,
         createdAt: games.createdAt,
       })

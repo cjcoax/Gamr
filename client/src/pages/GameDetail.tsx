@@ -409,6 +409,40 @@ export default function GameDetail() {
                         </p>
                       </div>
                     </div>
+
+                    {/* Ratings Section */}
+                    <div className="border-t border-slate-600 pt-4 space-y-3">
+                      <h3 className="text-sm font-medium text-slate-400">Ratings</h3>
+                      <div className="space-y-2">
+                        {/* User Reviews */}
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-slate-400">Gamr Users</span>
+                          <div className="flex items-center space-x-2">
+                            <div className="flex">
+                              {renderStarRating(averageRating, false)}
+                            </div>
+                            <span className="text-sm text-white">
+                              {averageRating.toFixed(1)} ({reviewCount} {reviewCount === 1 ? 'review' : 'reviews'})
+                            </span>
+                          </div>
+                        </div>
+                        
+                        {/* IGDB Rating */}
+                        {game.igdbRating && (
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-slate-400">IGDB Community</span>
+                            <div className="flex items-center space-x-2">
+                              <div className="flex">
+                                {renderStarRating(game.igdbRating, false)}
+                              </div>
+                              <span className="text-sm text-white">
+                                {game.igdbRating.toFixed(1)} / 5.0
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
 
