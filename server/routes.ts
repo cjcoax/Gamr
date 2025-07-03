@@ -531,6 +531,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Media upload endpoint for game posts
+  app.post("/api/games/:gameId/upload-media", isAuthenticated, async (req: any, res) => {
+    try {
+      const gameId = parseInt(req.params.gameId);
+      const userId = req.user.claims.sub;
+      
+      // Parse the uploaded image data
+      const { imageData, fileName } = req.body;
+      
+      if (!imageData) {
+        return res.status(400).json({ message: "No image data provided" });
+      }
+
+      // Validate file size (10MB limit)
+      const base64Data = imageData.replace(/^data:image\/[a-z]+;base64,/, "");
+      const bufferSize = Buffer.byteLength(base64Data, 'base64');
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      
+      if (bufferSize > maxSize) {
+        return res.status(400).json({ message: "File size exceeds 10MB limit" });
+      }
+
+      // For demo purposes, we'll store the data URL directly
+      // In production, you'd upload to a cloud storage service
+      const imageUrl = imageData;
+
+      // Create a media post for this game
+      const post = await storage.createGamePost({
+        userId,
+        gameId,
+        content: `Uploaded ${fileName || 'screenshot'}`,
+        imageUrls: [imageUrl],
+        postType: 'media'
+      });
+
+      res.json({ 
+        message: "Media uploaded successfully",
+        post,
+        imageUrl
+      });
+    } catch (error) {
+      console.error("Error uploading media:", error);
+      res.status(500).json({ message: "Failed to upload media" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

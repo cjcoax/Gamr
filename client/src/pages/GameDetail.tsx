@@ -13,6 +13,7 @@ import { ArrowLeft, Star, Plus, Edit, Upload, Image, Calendar, Users, MessageSqu
 import { queryClient } from "@/lib/queryClient";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import PhotoUploadDialog from "@/components/PhotoUploadDialog";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import BottomNavigation from "@/components/BottomNavigation";
 import type { GameWithUserData, Review } from "@shared/schema";
@@ -23,6 +24,7 @@ export default function GameDetail() {
   const { user } = useAuth();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [photoUploadOpen, setPhotoUploadOpen] = useState(false);
 
   // Type guard for user
   const isValidUser = (user: any): user is { id: string; [key: string]: any } => {
@@ -594,6 +596,7 @@ export default function GameDetail() {
                     <Button
                       variant="outline"
                       className="bg-gaming-purple hover:bg-gaming-violet text-white border-gaming-purple"
+                      onClick={() => setPhotoUploadOpen(true)}
                     >
                       <Camera className="w-4 h-4 mr-2" />
                       Add photo
@@ -605,28 +608,61 @@ export default function GameDetail() {
                   <CardContent className="p-4">
                     <h3 className="text-sm font-medium text-slate-400 mb-3">User-Uploaded Media</h3>
                     
-                    {/* Filter reviews that have images */}
+                    {/* Show uploaded media from posts and reviews */}
                     {(() => {
+                      const gamePosts = Array.isArray(postsArray) ? postsArray : [];
+                      const mediaItems: any[] = [];
+                      
+                      // Get media from posts
+                      gamePosts.forEach((post: any) => {
+                        if (post.postType === 'media' && post.imageUrls && post.imageUrls.length > 0) {
+                          post.imageUrls.forEach((imageUrl: string) => {
+                            mediaItems.push({
+                              id: `post-${post.id}-${Math.random()}`,
+                              imageUrl,
+                              user: post.user,
+                              createdAt: post.createdAt,
+                              type: 'screenshot'
+                            });
+                          });
+                        }
+                      });
+                      
+                      // Also include review images
                       const reviewsWithImages = reviewsArray.filter((review: any) => review.imageUrl);
-                      return reviewsWithImages.length > 0 ? (
+                      reviewsWithImages.forEach((review: any) => {
+                        mediaItems.push({
+                          id: `review-${review.id}`,
+                          imageUrl: review.imageUrl,
+                          user: review.user,
+                          createdAt: review.createdAt,
+                          rating: review.rating,
+                          type: 'review'
+                        });
+                      });
+                      
+                      // Sort by creation date (newest first)
+                      mediaItems.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+                      
+                      return mediaItems.length > 0 ? (
                         <div className="grid grid-cols-2 gap-3">
-                          {reviewsWithImages.map((review: any) => (
-                            <div key={review.id} className="space-y-2">
+                          {mediaItems.map((media: any) => (
+                            <div key={media.id} className="space-y-2">
                               <img
-                                src={review.imageUrl}
-                                alt={`Review by ${review.user?.username || "User"}`}
+                                src={media.imageUrl}
+                                alt={`${media.type === 'review' ? 'Review' : 'Screenshot'} by ${media.user?.username || "User"}`}
                                 className="w-full h-24 object-cover rounded border border-slate-600"
                               />
                               <div className="flex items-center space-x-2">
                                 <img
-                                  src={review.user?.profileImageUrl || "https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=20&h=20&fit=crop&crop=face"}
-                                  alt={review.user?.username || "User"}
+                                  src={media.user?.profileImageUrl || "https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=20&h=20&fit=crop&crop=face"}
+                                  alt={media.user?.username || "User"}
                                   className="w-4 h-4 rounded-full object-cover"
                                 />
                                 <span className="text-xs text-slate-400">
-                                  {review.user?.username || "Anonymous"}
+                                  {media.user?.username || "Anonymous"}
                                 </span>
-                                {renderStars(review.rating || 0, false, "w-3 h-3")}
+                                {media.type === 'review' && renderStars(media.rating || 0, false, "w-3 h-3")}
                               </div>
                             </div>
                           ))}
@@ -634,8 +670,8 @@ export default function GameDetail() {
                       ) : (
                         <div className="text-center py-8">
                           <Image className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-                          <p className="text-sm text-slate-400 mb-2">No user media yet</p>
-                          <p className="text-xs text-slate-500">Photos from reviews will appear here</p>
+                          <p className="text-sm text-slate-400 mb-2">No media uploaded yet</p>
+                          <p className="text-xs text-slate-500">Upload screenshots and images using the "Add photo" button above</p>
                         </div>
                       );
                     })()}
@@ -742,6 +778,15 @@ export default function GameDetail() {
         </div>
 
         <BottomNavigation activeTab="" />
+        
+        {/* Photo Upload Dialog */}
+        {id && (
+          <PhotoUploadDialog
+            open={photoUploadOpen}
+            onOpenChange={setPhotoUploadOpen}
+            gameId={parseInt(id)}
+          />
+        )}
       </div>
     </div>
   );
