@@ -530,6 +530,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Favorite games routes
+  app.get("/api/favorites", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const favorites = await storage.getUserFavoriteGames(userId);
+      res.json(favorites);
+    } catch (error) {
+      console.error("Error fetching favorite games:", error);
+      res.status(500).json({ message: "Failed to fetch favorite games" });
+    }
+  });
+
+  app.post("/api/favorites", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { gameId, position } = req.body;
+
+      if (!gameId || !position) {
+        return res.status(400).json({ message: "Game ID and position are required" });
+      }
+
+      const favorite = await storage.setFavoriteGame(userId, parseInt(gameId), parseInt(position));
+      res.status(201).json(favorite);
+    } catch (error) {
+      console.error("Error setting favorite game:", error);
+      res.status(500).json({ message: "Failed to set favorite game" });
+    }
+  });
+
+  app.delete("/api/favorites/:position", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const position = parseInt(req.params.position);
+      await storage.removeFavoriteGame(userId, position);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error removing favorite game:", error);
+      res.status(500).json({ message: "Failed to remove favorite game" });
+    }
+  });
+
   app.delete("/api/posts/:id", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;

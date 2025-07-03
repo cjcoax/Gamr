@@ -1,14 +1,17 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import BottomNavigation from "@/components/BottomNavigation";
 import EditProfileDialog from "@/components/EditProfileDialog";
+import FavoriteGameDialog from "@/components/FavoriteGameDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, LogOut, Star, Clock, CheckCircle, Edit, Gamepad2, Plus, MessageSquare, Camera } from "lucide-react";
+import { ArrowLeft, LogOut, Star, Clock, CheckCircle, Edit, Gamepad2, Plus, MessageSquare, Camera, X } from "lucide-react";
 import { useLocation } from "wouter";
-import type { Review, Game } from "@shared/schema";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import type { Review, Game, FavoriteGame } from "@shared/schema";
 
 type ReviewWithGame = Review & { game: Game };
 
@@ -16,6 +19,10 @@ export default function Profile() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showFavoriteDialog, setShowFavoriteDialog] = useState(false);
+  const [selectedPosition, setSelectedPosition] = useState<number>(1);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: userReviews } = useQuery({
     queryKey: ["/api/users", user?.id, "reviews"],
@@ -38,6 +45,33 @@ export default function Profile() {
     },
     enabled: !!user?.id,
   });
+
+  const { data: favoriteGames = [] } = useQuery({
+    queryKey: ["/api/favorites"],
+    queryFn: () => apiRequest("/api/favorites"),
+    enabled: !!user?.id,
+  });
+
+  const removeFavoriteMutation = useMutation({
+    mutationFn: (position: number) => 
+      apiRequest(`/api/favorites/${position}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/favorites'] });
+      toast({
+        title: "Favorite Removed",
+        description: "Game removed from favorites",
+      });
+    },
+  });
+
+  const handleAddFavorite = (position: number) => {
+    setSelectedPosition(position);
+    setShowFavoriteDialog(true);
+  };
+
+  const handleRemoveFavorite = (position: number) => {
+    removeFavoriteMutation.mutate(position);
+  };
 
   const handleLogout = () => {
     window.location.href = "/api/logout";
@@ -272,33 +306,44 @@ export default function Profile() {
                 <Star className="w-4 h-4 text-gaming-purple mr-2" />
                 <h3 className="text-lg font-semibold text-white">Favorite Games</h3>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-gaming-purple text-xs hover:bg-slate-800"
-              >
-                <Plus className="w-3 h-3 mr-1" />
-                Manage
-              </Button>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              {/* Placeholder for favorite games - will be implemented */}
-              <div className="bg-slate-800/50 rounded-lg p-3 border border-dashed border-slate-600 flex flex-col items-center justify-center text-center min-h-[120px]">
-                <Plus className="w-6 h-6 text-slate-500 mb-2" />
-                <span className="text-xs text-slate-500">Add favorite game</span>
-              </div>
-              <div className="bg-slate-800/50 rounded-lg p-3 border border-dashed border-slate-600 flex flex-col items-center justify-center text-center min-h-[120px]">
-                <Plus className="w-6 h-6 text-slate-500 mb-2" />
-                <span className="text-xs text-slate-500">Add favorite game</span>
-              </div>
-              <div className="bg-slate-800/50 rounded-lg p-3 border border-dashed border-slate-600 flex flex-col items-center justify-center text-center min-h-[120px]">
-                <Plus className="w-6 h-6 text-slate-500 mb-2" />
-                <span className="text-xs text-slate-500">Add favorite game</span>
-              </div>
-              <div className="bg-slate-800/50 rounded-lg p-3 border border-dashed border-slate-600 flex flex-col items-center justify-center text-center min-h-[120px]">
-                <Plus className="w-6 h-6 text-slate-500 mb-2" />
-                <span className="text-xs text-slate-500">Add favorite game</span>
-              </div>
+              {[1, 2, 3, 4].map((position) => {
+                const favorite = favoriteGames.find((f: any) => f.position === position);
+                return (
+                  <div key={position} className="relative group">
+                    {favorite ? (
+                      <div className="bg-slate-800/50 rounded-lg p-2 border border-slate-600 min-h-[120px] flex flex-col">
+                        <button
+                          onClick={() => handleRemoveFavorite(position)}
+                          className="absolute top-1 right-1 w-5 h-5 bg-red-500/80 hover:bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                        >
+                          <X className="w-3 h-3 text-white" />
+                        </button>
+                        {favorite.game.coverImageUrl && (
+                          <img
+                            src={favorite.game.coverImageUrl}
+                            alt={favorite.game.title}
+                            className="w-full h-16 object-cover rounded mb-2"
+                          />
+                        )}
+                        <div className="flex-1 flex flex-col justify-end">
+                          <h4 className="text-xs font-medium text-white line-clamp-2">{favorite.game.title}</h4>
+                          <div className="text-xs text-slate-400 mt-1">#{position}</div>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => handleAddFavorite(position)}
+                        className="bg-slate-800/50 rounded-lg p-3 border border-dashed border-slate-600 flex flex-col items-center justify-center text-center min-h-[120px] hover:bg-slate-700/50 transition-colors w-full"
+                      >
+                        <Plus className="w-6 h-6 text-slate-500 mb-2" />
+                        <span className="text-xs text-slate-500">Add favorite #{position}</span>
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </CardContent>
         </Card>
@@ -432,6 +477,13 @@ export default function Profile() {
         open={showEditDialog} 
         onOpenChange={setShowEditDialog} 
         user={user} 
+      />
+
+      {/* Favorite Game Dialog */}
+      <FavoriteGameDialog
+        open={showFavoriteDialog}
+        onOpenChange={setShowFavoriteDialog}
+        position={selectedPosition}
       />
     </div>
   );
