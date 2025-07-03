@@ -60,7 +60,7 @@ export default function Home() {
             <div className="w-8 h-8 bg-gaming-purple rounded-lg flex items-center justify-center">
               <span className="text-white text-sm font-bold">G</span>
             </div>
-            <h1 className="text-xl font-bold text-white">GameShelf</h1>
+            <h1 className="text-xl font-bold text-white">Gamr</h1>
           </div>
           <div className="flex items-center space-x-3">
             <Button 

@@ -115,7 +115,7 @@ export default function AddGameDialog({ open, onOpenChange }: AddGameDialogProps
         <DialogHeader>
           <DialogTitle className="text-white">Add New Game</DialogTitle>
           <DialogDescription className="text-slate-400">
-            Add a new game to the GameShelf database
+            Add a new game to the Gamr database
           </DialogDescription>
         </DialogHeader>
 
