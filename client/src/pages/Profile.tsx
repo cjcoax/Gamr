@@ -5,7 +5,8 @@ import BottomNavigation from "@/components/BottomNavigation";
 import EditProfileDialog from "@/components/EditProfileDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, LogOut, Star, Clock, CheckCircle, Edit } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, LogOut, Star, Clock, CheckCircle, Edit, Gamepad2, Plus } from "lucide-react";
 import { useLocation } from "wouter";
 import type { Review, Game } from "@shared/schema";
 
@@ -251,6 +252,45 @@ export default function Profile() {
             </CardContent>
           </Card>
         )}
+
+        {/* Favorite Games */}
+        <Card className="bg-gaming-card border-slate-700/50">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center">
+                <Star className="w-4 h-4 text-gaming-purple mr-2" />
+                <h3 className="text-lg font-semibold text-white">Favorite Games</h3>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-gaming-purple text-xs hover:bg-slate-800"
+              >
+                <Plus className="w-3 h-3 mr-1" />
+                Manage
+              </Button>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {/* Placeholder for favorite games - will be implemented */}
+              <div className="bg-slate-800/50 rounded-lg p-3 border border-dashed border-slate-600 flex flex-col items-center justify-center text-center min-h-[120px]">
+                <Plus className="w-6 h-6 text-slate-500 mb-2" />
+                <span className="text-xs text-slate-500">Add favorite game</span>
+              </div>
+              <div className="bg-slate-800/50 rounded-lg p-3 border border-dashed border-slate-600 flex flex-col items-center justify-center text-center min-h-[120px]">
+                <Plus className="w-6 h-6 text-slate-500 mb-2" />
+                <span className="text-xs text-slate-500">Add favorite game</span>
+              </div>
+              <div className="bg-slate-800/50 rounded-lg p-3 border border-dashed border-slate-600 flex flex-col items-center justify-center text-center min-h-[120px]">
+                <Plus className="w-6 h-6 text-slate-500 mb-2" />
+                <span className="text-xs text-slate-500">Add favorite game</span>
+              </div>
+              <div className="bg-slate-800/50 rounded-lg p-3 border border-dashed border-slate-600 flex flex-col items-center justify-center text-center min-h-[120px]">
+                <Plus className="w-6 h-6 text-slate-500 mb-2" />
+                <span className="text-xs text-slate-500">Add favorite game</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Recent Reviews */}
         {userReviews && userReviews.length > 0 && (
