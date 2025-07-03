@@ -153,26 +153,36 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getGameWithUserData(gameId: number, userId: string | null): Promise<GameWithUserData | undefined> {
-    const [gameResult] = await db
+    // First get the basic game data
+    const game = await this.getGame(gameId);
+    if (!game) return undefined;
+
+    // Get review statistics
+    const reviewStats = await db
       .select({
-        game: games,
-        userGame: userGames,
         averageRating: sql<number>`coalesce(avg(${reviews.rating}), 0)`,
         reviewCount: sql<number>`count(${reviews.id})`,
       })
-      .from(games)
-      .leftJoin(userGames, userId ? and(eq(userGames.gameId, gameId), eq(userGames.userId, userId)) : undefined)
-      .leftJoin(reviews, eq(reviews.gameId, gameId))
-      .where(eq(games.id, gameId))
-      .groupBy(games.id, userGames.id);
+      .from(reviews)
+      .where(eq(reviews.gameId, gameId));
 
-    if (!gameResult) return undefined;
+    const stats = reviewStats[0] || { averageRating: 0, reviewCount: 0 };
+
+    // Get user game data if authenticated
+    let userGame = undefined;
+    if (userId) {
+      const [userGameResult] = await db
+        .select()
+        .from(userGames)
+        .where(and(eq(userGames.gameId, gameId), eq(userGames.userId, userId)));
+      userGame = userGameResult || undefined;
+    }
 
     return {
-      ...gameResult.game,
-      userGame: gameResult.userGame || undefined,
-      averageRating: Number(gameResult.averageRating) || 0,
-      reviewCount: Number(gameResult.reviewCount) || 0,
+      ...game,
+      userGame,
+      averageRating: Number(stats.averageRating) || 0,
+      reviewCount: Number(stats.reviewCount) || 0,
     };
   }
 
