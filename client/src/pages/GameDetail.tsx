@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Star, Plus, Edit, Upload, Image, Calendar, Users } from "lucide-react";
+import { ArrowLeft, Star, Plus, Edit, Upload, Image, Calendar, Users, MessageSquare } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -33,6 +33,20 @@ export default function GameDetail() {
   // Post dialog state
   const [showPostDialog, setShowPostDialog] = useState(false);
   const [postContent, setPostContent] = useState("");
+
+  // Helper function to render star ratings
+  const renderStarRating = (rating: number, interactive: boolean = false) => {
+    return Array.from({ length: 5 }, (_, i) => (
+      <Star
+        key={i}
+        className={`w-4 h-4 ${
+          i < Math.floor(rating) 
+            ? 'fill-gaming-purple text-gaming-purple' 
+            : 'text-slate-600'
+        }`}
+      />
+    ));
+  };
 
   const { data: game, isLoading } = useQuery({
     queryKey: ["/api/games", id],

@@ -19,7 +19,10 @@ function Router() {
   return (
     <Switch>
       {isLoading || !isAuthenticated ? (
-        <Route path="/" component={Landing} />
+        <>
+          <Route path="/" component={Landing} />
+          <Route path="/games/:id" component={GameDetail} />
+        </>
       ) : (
         <>
           <Route path="/" component={Home} />
@@ -27,7 +30,7 @@ function Router() {
           <Route path="/library" component={Library} />
           <Route path="/discover" component={Discover} />
           <Route path="/profile" component={Profile} />
-          <Route path="/game/:id" component={GameDetail} />
+          <Route path="/games/:id" component={GameDetail} />
         </>
       )}
       <Route component={NotFound} />

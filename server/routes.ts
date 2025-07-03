@@ -116,10 +116,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/games/:id", isAuthenticated, async (req: any, res) => {
+  app.get("/api/games/:id", async (req: any, res) => {
     try {
       const gameId = parseInt(req.params.id);
-      const userId = req.user.claims.sub;
+      const userId = req.user?.claims?.sub || null;
       const game = await storage.getGameWithUserData(gameId, userId);
       if (!game) {
         return res.status(404).json({ message: "Game not found" });

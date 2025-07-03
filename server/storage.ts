@@ -36,7 +36,7 @@ export interface IStorage {
   // Game operations
   getAllGames(limit?: number, offset?: number): Promise<Game[]>;
   getGame(id: number): Promise<Game | undefined>;
-  getGameWithUserData(gameId: number, userId: string): Promise<GameWithUserData | undefined>;
+  getGameWithUserData(gameId: number, userId: string | null): Promise<GameWithUserData | undefined>;
   searchGames(query: string, limit?: number): Promise<Game[]>;
   createGame(game: InsertGame): Promise<Game>;
   getGamesByCategory(category: string, limit?: number): Promise<Game[]>;
@@ -152,7 +152,7 @@ export class DatabaseStorage implements IStorage {
     return game;
   }
 
-  async getGameWithUserData(gameId: number, userId: string): Promise<GameWithUserData | undefined> {
+  async getGameWithUserData(gameId: number, userId: string | null): Promise<GameWithUserData | undefined> {
     const [gameResult] = await db
       .select({
         game: games,
@@ -161,7 +161,7 @@ export class DatabaseStorage implements IStorage {
         reviewCount: sql<number>`count(${reviews.id})`,
       })
       .from(games)
-      .leftJoin(userGames, and(eq(userGames.gameId, gameId), eq(userGames.userId, userId)))
+      .leftJoin(userGames, userId ? and(eq(userGames.gameId, gameId), eq(userGames.userId, userId)) : undefined)
       .leftJoin(reviews, eq(reviews.gameId, gameId))
       .where(eq(games.id, gameId))
       .groupBy(games.id, userGames.id);
