@@ -111,6 +111,7 @@ Gamr is a full-stack web application that serves as a personal gaming library an
 ```
 Changelog:
 - July 03, 2025. Initial setup
+- July 03, 2025. Added gaming platform username fields to user profiles - Steam, Epic, Battle.net, PSN, Xbox, Nintendo, EA, Discord
 ```
 
 ## User Preferences
