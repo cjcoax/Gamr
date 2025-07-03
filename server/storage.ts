@@ -76,6 +76,7 @@ export interface IStorage {
   createGameFromIGDB(igdbId: number): Promise<Game>;
   getGameByIGDBId(igdbId: number): Promise<Game | undefined>;
   updateSampleGamesWithIGDB(): Promise<void>;
+  addNewGamesFromIGDB(): Promise<void>;
 
   // Game posts operations
   getGamePosts(gameId: number, limit?: number): Promise<(GamePost & { user: User })[]>;
@@ -614,6 +615,95 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  async addNewGamesFromIGDB(): Promise<void> {
+    try {
+      // Games to add with their specific search terms
+      const gamesToAdd = [
+        "Fortnite",
+        "Infinity Nikki", 
+        "Avowed",
+        "Baldur's Gate 3",
+        "Overwatch 2",
+        "Abiotic Factor",
+        "Diablo IV",
+        "Grand Theft Auto VI"
+      ];
+
+      for (const gameTitle of gamesToAdd) {
+        try {
+          // Check if game already exists
+          const existingGame = await db.select().from(games)
+            .where(eq(games.title, gameTitle))
+            .limit(1);
+
+          if (existingGame.length > 0) {
+            console.log(`Game ${gameTitle} already exists, skipping`);
+            continue;
+          }
+
+          // Search for the game
+          const searchResults = await igdbService.searchGames(gameTitle, 5);
+          if (searchResults.length > 0) {
+            // Get detailed data for the first result
+            const gameData = await igdbService.getGameDetails(searchResults[0].id);
+            
+            if (gameData) {
+              // Create the game entry
+              await db.insert(games).values({
+                igdbId: gameData.id,
+                title: gameData.name,
+                description: gameData.summary || null,
+                coverImageUrl: gameData.cover?.url ? igdbService['formatImageUrl'](gameData.cover.url) : null,
+                screenshotUrls: gameData.screenshots?.map(s => igdbService['formatImageUrl'](s.url)) || null,
+                genre: gameData.genres?.[0]?.name || null,
+                platform: gameData.platforms?.map(p => p.name).join(', ') || null,
+                developer: gameData.involved_companies?.find(c => c.developer)?.company.name || null,
+                publisher: gameData.involved_companies?.find(c => c.publisher)?.company.name || null,
+                releaseDate: gameData.first_release_date ? new Date(gameData.first_release_date * 1000) : null,
+                igdbRating: gameData.rating ? Math.round(gameData.rating) / 20 : null,
+                isRetro: gameData.first_release_date ? 
+                  (new Date(gameData.first_release_date * 1000).getFullYear() < 2015) : false,
+              });
+
+              console.log(`Added game: ${gameData.name}`);
+            }
+          } else {
+            console.log(`Could not find IGDB data for: ${gameTitle}`);
+            
+            // Special handling for GTA VI since it's not in IGDB yet
+            if (gameTitle === "Grand Theft Auto VI") {
+              try {
+                await db.insert(games).values({
+                  title: "Grand Theft Auto VI",
+                  description: "Grand Theft Auto VI is an upcoming action-adventure game in development by Rockstar Games. It is due to be the eighth main Grand Theft Auto game, following Grand Theft Auto V (2013), and the sixteenth instalment overall.",
+                  genre: "Action-Adventure",
+                  platform: "PlayStation 5, Xbox Series X/S",
+                  developer: "Rockstar Games",
+                  publisher: "Rockstar Games",
+                  releaseDate: new Date("2025-12-31"),
+                  isRetro: false,
+                });
+                console.log("Added game: Grand Theft Auto VI (manual entry)");
+              } catch (error) {
+                console.error("Error adding GTA VI manually:", error);
+              }
+            }
+          }
+
+          // Add delay to avoid rate limiting
+          await new Promise(resolve => setTimeout(resolve, 200));
+
+        } catch (error) {
+          console.error(`Error adding game ${gameTitle}:`, error);
+        }
+      }
+
+      console.log("Finished adding new games from IGDB");
+    } catch (error) {
+      console.error("Error adding new games from IGDB:", error);
+    }
+  }
+
   // Game posts operations
   async getGamePosts(gameId: number, limit = 20): Promise<(GamePost & { user: User })[]> {
     return db
@@ -758,6 +848,9 @@ async function seedSampleGames() {
 seedSampleGames().then(() => {
   // Update sample games with IGDB data after seeding
   setTimeout(() => {
-    storage.updateSampleGamesWithIGDB().catch(console.error);
+    storage.updateSampleGamesWithIGDB().then(() => {
+      // Add new games from IGDB after updating existing ones
+      return storage.addNewGamesFromIGDB();
+    }).catch(console.error);
   }, 3000); // Wait 3 seconds for server to fully start
 }).catch(console.error);
