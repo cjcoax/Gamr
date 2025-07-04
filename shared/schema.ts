@@ -72,7 +72,7 @@ export const userGames = pgTable("user_games", {
   id: serial("id").primaryKey(),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   gameId: integer("game_id").notNull().references(() => games.id, { onDelete: "cascade" }),
-  status: varchar("status", { length: 50 }).notNull(), // want_to_play, currently_playing, completed
+  status: varchar("status", { length: 50 }).notNull(), // want_to_play, playing, completed, dnf
   progress: integer("progress").default(0), // percentage 0-100
   rating: real("rating"), // 1-5 stars
   hoursPlayed: integer("hours_played").default(0),

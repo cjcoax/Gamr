@@ -124,6 +124,7 @@ Changelog:
 - July 03, 2025. Enhanced Search tab with context-aware help text - different placeholders and empty state messages for Games vs Users tabs
 - July 03, 2025. Added 8 additional games for testing: V Rising, Marvel Rivals, Hunt: Showdown 1896, Luma Island, Two Point Museum, Bloons TD 6, Dune: Awakening, and Conan Exiles
 - July 04, 2025. Fixed critical "Playing" status bug - database stores "playing" but statistics queries were looking for "currently_playing", causing 0 count in profile stats. Updated all components to use consistent "playing" status throughout the application
+- July 04, 2025. Comprehensive fix for "playing" vs "currently_playing" inconsistency across entire project - updated CurrentlyPlaying.tsx, LibraryPreview.tsx, Library.tsx empty states, and schema comments. All game status tracking now uses unified "playing" status
 ```
 
 ## User Preferences

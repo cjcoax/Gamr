@@ -111,7 +111,7 @@ export default function Library() {
                 <h3 className="text-lg font-semibold text-white mb-2">
                   {activeTab === "all" ? "No games in library" : 
                    activeTab === "want_to_play" ? "No games in want to play" :
-                   activeTab === "currently_playing" ? "No games currently playing" :
+                   activeTab === "playing" ? "No games currently playing" :
                    "No completed games"}
                 </h3>
                 <p className="text-slate-400">Start building your gaming library!</p>

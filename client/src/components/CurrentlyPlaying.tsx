@@ -12,9 +12,9 @@ export default function CurrentlyPlaying() {
   const [, setLocation] = useLocation();
 
   const { data: currentlyPlayingGames, isLoading } = useQuery({
-    queryKey: ["/api/library", { status: "currently_playing" }],
+    queryKey: ["/api/library", { status: "playing" }],
     queryFn: async () => {
-      const response = await fetch("/api/library?status=currently_playing");
+      const response = await fetch("/api/library?status=playing");
       if (!response.ok) throw new Error("Failed to fetch currently playing games");
       return response.json() as Promise<UserGameWithGame[]>;
     },

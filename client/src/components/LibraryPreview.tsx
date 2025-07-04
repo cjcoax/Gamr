@@ -25,7 +25,7 @@ export default function LibraryPreview() {
         case "want_to_play":
           acc.wantToPlay++;
           break;
-        case "currently_playing":
+        case "playing":
           acc.playing++;
           break;
         case "completed":
