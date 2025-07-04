@@ -121,6 +121,7 @@ export const gamePosts = pgTable("game_posts", {
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   gameId: integer("game_id").notNull().references(() => games.id, { onDelete: "cascade" }),
   content: text("content").notNull(),
+  caption: text("caption"), // Optional caption for media posts
   imageUrls: text("image_urls").array(),
   postType: varchar("post_type", { length: 50 }).notNull().default("text"), // text, image, screenshot
   createdAt: timestamp("created_at").defaultNow(),

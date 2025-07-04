@@ -701,7 +701,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       
       // Parse the uploaded image data
-      const { imageData, fileName } = req.body;
+      const { imageData, fileName, caption } = req.body;
       
       if (!imageData) {
         return res.status(400).json({ message: "No image data provided" });
@@ -724,7 +724,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const post = await storage.createGamePost({
         userId,
         gameId,
-        content: `Uploaded ${fileName || 'screenshot'}`,
+        content: caption || `Uploaded ${fileName || 'screenshot'}`,
         imageUrls: [imageUrl],
         postType: 'media'
       });

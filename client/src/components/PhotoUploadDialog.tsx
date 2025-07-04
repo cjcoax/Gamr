@@ -16,19 +16,20 @@ interface PhotoUploadDialogProps {
 export default function PhotoUploadDialog({ open, onOpenChange, gameId }: PhotoUploadDialogProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [caption, setCaption] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const uploadMutation = useMutation({
-    mutationFn: async ({ imageData, fileName }: { imageData: string; fileName: string }) => {
+    mutationFn: async ({ imageData, fileName, caption }: { imageData: string; fileName: string; caption: string }) => {
       const response = await fetch(`/api/games/${gameId}/upload-media`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ imageData, fileName }),
+        body: JSON.stringify({ imageData, fileName, caption }),
       });
       
       if (!response.ok) {
@@ -100,6 +101,7 @@ export default function PhotoUploadDialog({ open, onOpenChange, gameId }: PhotoU
       await uploadMutation.mutateAsync({
         imageData: previewUrl,
         fileName: selectedFile.name,
+        caption: caption,
       });
     } finally {
       setIsUploading(false);
@@ -109,6 +111,7 @@ export default function PhotoUploadDialog({ open, onOpenChange, gameId }: PhotoU
   const handleClose = () => {
     setSelectedFile(null);
     setPreviewUrl(null);
+    setCaption("");
     setIsUploading(false);
     onOpenChange(false);
   };
@@ -182,6 +185,18 @@ export default function PhotoUploadDialog({ open, onOpenChange, gameId }: PhotoU
                   <span className="text-slate-400">Size:</span>
                   <span className="text-white">{formatFileSize(selectedFile.size)}</span>
                 </div>
+              </div>
+
+              {/* Caption Input */}
+              <div className="space-y-2">
+                <label className="text-slate-400 text-sm">Caption (optional)</label>
+                <Input
+                  value={caption}
+                  onChange={(e) => setCaption(e.target.value)}
+                  placeholder="Add a caption to your photo..."
+                  className="bg-slate-800 border-slate-600 text-white placeholder:text-slate-500"
+                  maxLength={200}
+                />
               </div>
 
               <div className="flex space-x-2">

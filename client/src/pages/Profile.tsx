@@ -4,6 +4,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import BottomNavigation from "@/components/BottomNavigation";
 import EditProfileDialog from "@/components/EditProfileDialog";
 import FavoriteGameDialog from "@/components/FavoriteGameDialog";
+import PostInteractions from "@/components/PostInteractions";
+import ImageModal from "@/components/ImageModal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -380,6 +382,7 @@ export default function Profile() {
             userPosts.forEach((post: any) => {
               activities.push({
                 id: `post-${post.id}`,
+                postId: post.id, // Include actual post ID for interactions
                 type: post.postType || 'post',
                 game: post.game,
                 content: post.content,
@@ -438,12 +441,18 @@ export default function Profile() {
                       {activity.type === 'media' && activity.imageUrls && activity.imageUrls.length > 0 && (
                         <div className="grid grid-cols-2 gap-2 mb-2">
                           {activity.imageUrls.slice(0, 4).map((imageUrl: string, index: number) => (
-                            <img
+                            <ImageModal
                               key={index}
                               src={imageUrl}
                               alt="User media"
-                              className="w-full h-16 object-cover rounded border border-slate-600"
-                            />
+                              className="w-full h-16"
+                            >
+                              <img
+                                src={imageUrl}
+                                alt="User media"
+                                className="w-full h-16 object-cover rounded border border-slate-600"
+                              />
+                            </ImageModal>
                           ))}
                         </div>
                       )}
@@ -451,11 +460,17 @@ export default function Profile() {
                       {/* Show single image for reviews */}
                       {activity.type === 'review' && activity.imageUrl && (
                         <div className="mb-2">
-                          <img
+                          <ImageModal
                             src={activity.imageUrl}
                             alt="Review media"
-                            className="w-24 h-16 object-cover rounded border border-slate-600"
-                          />
+                            className="w-24 h-16"
+                          >
+                            <img
+                              src={activity.imageUrl}
+                              alt="Review media"
+                              className="w-24 h-16 object-cover rounded border border-slate-600"
+                            />
+                          </ImageModal>
                         </div>
                       )}
                       
@@ -467,6 +482,13 @@ export default function Profile() {
                           {activity.type === 'media' ? 'Photo Upload' : activity.type}
                         </span>
                       </div>
+                      
+                      {/* Add PostInteractions for posts */}
+                      {activity.postId && (
+                        <div className="mt-3 pt-3 border-t border-slate-700">
+                          <PostInteractions postId={activity.postId} />
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 ))}
