@@ -48,7 +48,10 @@ export default function UserProfile() {
 
   const followMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest(`/api/users/${userId}/follow`, 'POST');
+      console.log('Attempting to follow user:', userId);
+      const result = await apiRequest(`/api/users/${userId}/follow`, 'POST');
+      console.log('Follow result:', result);
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/users", userId] });
@@ -58,6 +61,7 @@ export default function UserProfile() {
       });
     },
     onError: (error) => {
+      console.error('Follow error:', error);
       if (isUnauthorizedError(error)) {
         toast({
           title: "Unauthorized",
@@ -71,7 +75,7 @@ export default function UserProfile() {
       }
       toast({
         title: "Error",
-        description: "Failed to follow user. Please try again.",
+        description: `Failed to follow user: ${error.message}`,
         variant: "destructive",
       });
     },
@@ -225,7 +229,14 @@ export default function UserProfile() {
 
               {!isOwnProfile && (
                 <Button
-                  onClick={() => user.isFollowing ? unfollowMutation.mutate() : followMutation.mutate()}
+                  onClick={() => {
+                    console.log('Button clicked, isFollowing:', user.isFollowing);
+                    if (user.isFollowing) {
+                      unfollowMutation.mutate();
+                    } else {
+                      followMutation.mutate();
+                    }
+                  }}
                   disabled={followMutation.isPending || unfollowMutation.isPending}
                   variant={user.isFollowing ? "outline" : "default"}
                   size="sm"
