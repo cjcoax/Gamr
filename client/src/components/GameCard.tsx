@@ -62,11 +62,14 @@ export default function GameCard({ game, userGame, showProgress }: GameCardProps
                   variant={
                     userGame.status === "completed" ? "default" :
                     userGame.status === "currently_playing" ? "secondary" :
+                    userGame.status === "dnf" ? "destructive" :
                     "outline"
                   }
-                  className="text-xs capitalize"
+                  className={`text-xs capitalize ${
+                    userGame.status === "dnf" ? "bg-orange-600 hover:bg-orange-700" : ""
+                  }`}
                 >
-                  {userGame.status.replace("_", " ")}
+                  {userGame.status === "dnf" ? "DNF" : userGame.status.replace("_", " ")}
                 </Badge>
               </div>
             )}

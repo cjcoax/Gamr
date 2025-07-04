@@ -317,7 +317,7 @@ export default function GameDetail() {
           {/* Action Buttons */}
           <div className="px-4 py-4 space-y-3">
             {!gameData.userGame ? (
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-4 gap-2">
                 <Button
                   onClick={() => addToLibraryMutation.mutate("want_to_play")}
                   disabled={addToLibraryMutation.isPending}
@@ -326,7 +326,7 @@ export default function GameDetail() {
                   Want to Play
                 </Button>
                 <Button
-                  onClick={() => addToLibraryMutation.mutate("playing")}
+                  onClick={() => addToLibraryMutation.mutate("currently_playing")}
                   disabled={addToLibraryMutation.isPending}
                   className="bg-gaming-purple hover:bg-gaming-violet text-white text-xs"
                 >
@@ -338,6 +338,13 @@ export default function GameDetail() {
                   className="bg-green-600 hover:bg-green-700 text-white text-xs"
                 >
                   Completed
+                </Button>
+                <Button
+                  onClick={() => addToLibraryMutation.mutate("dnf")}
+                  disabled={addToLibraryMutation.isPending}
+                  className="bg-orange-600 hover:bg-orange-700 text-white text-xs"
+                >
+                  DNF
                 </Button>
               </div>
             ) : (

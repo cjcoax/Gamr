@@ -27,13 +27,13 @@ export default function Library() {
   }) || [];
 
   const getStatusCounts = () => {
-    if (!userGames) return { all: 0, want_to_play: 0, currently_playing: 0, completed: 0 };
+    if (!userGames) return { all: 0, want_to_play: 0, currently_playing: 0, completed: 0, dnf: 0 };
     
     return userGames.reduce((acc: any, userGame: UserGameWithGame) => {
       acc.all++;
       acc[userGame.status] = (acc[userGame.status] || 0) + 1;
       return acc;
-    }, { all: 0, want_to_play: 0, currently_playing: 0, completed: 0 });
+    }, { all: 0, want_to_play: 0, currently_playing: 0, completed: 0, dnf: 0 });
   };
 
   const statusCounts = getStatusCounts();
@@ -58,7 +58,7 @@ export default function Library() {
       {/* Library Tabs */}
       <div className="p-4">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-gaming-card">
+          <TabsList className="grid w-full grid-cols-5 bg-gaming-card">
             <TabsTrigger value="all" className="text-xs">
               All ({statusCounts.all})
             </TabsTrigger>
@@ -70,6 +70,9 @@ export default function Library() {
             </TabsTrigger>
             <TabsTrigger value="completed" className="text-xs">
               Done ({statusCounts.completed})
+            </TabsTrigger>
+            <TabsTrigger value="dnf" className="text-xs">
+              DNF ({statusCounts.dnf})
             </TabsTrigger>
           </TabsList>
 

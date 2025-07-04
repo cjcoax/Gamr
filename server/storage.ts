@@ -143,6 +143,7 @@ export class DatabaseStorage implements IStorage {
         gamesCompleted: sql<number>`count(case when ${userGames.status} = 'completed' then 1 end)`,
         gamesPlaying: sql<number>`count(case when ${userGames.status} = 'currently_playing' then 1 end)`,
         gamesWantToPlay: sql<number>`count(case when ${userGames.status} = 'want_to_play' then 1 end)`,
+        gamesDNF: sql<number>`count(case when ${userGames.status} = 'dnf' then 1 end)`,
         totalHoursPlayed: sql<number>`coalesce(sum(${userGames.hoursPlayed}), 0)`,
         averageRating: sql<number>`coalesce(avg(${userGames.rating}), 0)`,
       })
@@ -155,6 +156,7 @@ export class DatabaseStorage implements IStorage {
         gamesCompleted: Number(statsResult.gamesCompleted) || 0,
         gamesPlaying: Number(statsResult.gamesPlaying) || 0,
         gamesWantToPlay: Number(statsResult.gamesWantToPlay) || 0,
+        gamesDNF: Number(statsResult.gamesDNF) || 0,
         totalHoursPlayed: Number(statsResult.totalHoursPlayed) || 0,
         averageRating: Number(statsResult.averageRating) || 0,
       },

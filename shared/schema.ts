@@ -356,6 +356,7 @@ export type UserWithStats = User & {
     gamesCompleted: number;
     gamesPlaying: number;
     gamesWantToPlay: number;
+    gamesDNF: number;
     totalHoursPlayed: number;
     averageRating: number;
   };
