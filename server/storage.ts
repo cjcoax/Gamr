@@ -652,7 +652,15 @@ export class DatabaseStorage implements IStorage {
         "Overwatch 2",
         "Abiotic Factor",
         "Diablo IV",
-        "Grand Theft Auto VI"
+        "Grand Theft Auto VI",
+        "V Rising",
+        "Marvel Rivals",
+        "Hunt: Showdown 1896",
+        "Luma Island",
+        "Two Point Museum",
+        "Bloons TD 6",
+        "Dune: Awakening",
+        "Conan Exiles"
       ];
 
       for (const gameTitle of gamesToAdd) {
