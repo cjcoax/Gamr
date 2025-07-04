@@ -134,6 +134,32 @@ export const favoriteGames = pgTable("favorite_games", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Post reactions table
+export const postReactions = pgTable("post_reactions", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  postId: integer("post_id").notNull().references(() => gamePosts.id, { onDelete: "cascade" }),
+  reactionType: varchar("reaction_type").notNull(), // 'like', 'heart', 'laugh', 'sad', 'wow', 'angry'
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("idx_post_reactions").on(table.postId),
+  index("idx_user_reactions").on(table.userId),
+  // Ensure one reaction per user per post
+  index("idx_unique_user_post_reaction").on(table.userId, table.postId),
+]);
+
+// Post comments table
+export const postComments = pgTable("post_comments", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  postId: integer("post_id").notNull().references(() => gamePosts.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("idx_post_comments").on(table.postId),
+  index("idx_user_comments").on(table.userId),
+]);
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   userGames: many(userGames),
@@ -196,7 +222,7 @@ export const userFollowsRelations = relations(userFollows, ({ one }) => ({
   }),
 }));
 
-export const gamePostsRelations = relations(gamePosts, ({ one }) => ({
+export const gamePostsRelations = relations(gamePosts, ({ one, many }) => ({
   user: one(users, {
     fields: [gamePosts.userId],
     references: [users.id],
@@ -205,6 +231,8 @@ export const gamePostsRelations = relations(gamePosts, ({ one }) => ({
     fields: [gamePosts.gameId],
     references: [games.id],
   }),
+  reactions: many(postReactions),
+  comments: many(postComments),
 }));
 
 export const favoriteGamesRelations = relations(favoriteGames, ({ one }) => ({
@@ -215,6 +243,28 @@ export const favoriteGamesRelations = relations(favoriteGames, ({ one }) => ({
   game: one(games, {
     fields: [favoriteGames.gameId],
     references: [games.id],
+  }),
+}));
+
+export const postReactionsRelations = relations(postReactions, ({ one }) => ({
+  user: one(users, {
+    fields: [postReactions.userId],
+    references: [users.id],
+  }),
+  post: one(gamePosts, {
+    fields: [postReactions.postId],
+    references: [gamePosts.id],
+  }),
+}));
+
+export const postCommentsRelations = relations(postComments, ({ one }) => ({
+  user: one(users, {
+    fields: [postComments.userId],
+    references: [users.id],
+  }),
+  post: one(gamePosts, {
+    fields: [postComments.postId],
+    references: [gamePosts.id],
   }),
 }));
 
@@ -261,6 +311,16 @@ export const insertFavoriteGameSchema = createInsertSchema(favoriteGames).omit({
   createdAt: true,
 });
 
+export const insertPostReactionSchema = createInsertSchema(postReactions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertPostCommentSchema = createInsertSchema(postComments).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -278,6 +338,10 @@ export type GamePost = typeof gamePosts.$inferSelect;
 export type InsertGamePost = z.infer<typeof insertGamePostSchema>;
 export type FavoriteGame = typeof favoriteGames.$inferSelect;
 export type InsertFavoriteGame = z.infer<typeof insertFavoriteGameSchema>;
+export type PostReaction = typeof postReactions.$inferSelect;
+export type InsertPostReaction = z.infer<typeof insertPostReactionSchema>;
+export type PostComment = typeof postComments.$inferSelect;
+export type InsertPostComment = z.infer<typeof insertPostCommentSchema>;
 
 // Additional types for API responses
 export type GameWithUserData = Game & {
@@ -299,4 +363,20 @@ export type UserWithStats = User & {
 export type ActivityWithDetails = Activity & {
   user: User;
   game?: Game;
+};
+
+export type PostWithDetails = GamePost & {
+  user: User;
+  game: Game;
+  reactions: (PostReaction & { user: User })[];
+  comments: (PostComment & { user: User })[];
+  reactionCounts: {
+    like: number;
+    heart: number;
+    laugh: number;
+    sad: number;
+    wow: number;
+    angry: number;
+  };
+  userReaction?: string;
 };

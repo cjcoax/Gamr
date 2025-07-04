@@ -600,6 +600,100 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Post reactions routes
+  app.get("/api/posts/:id/reactions", async (req, res) => {
+    try {
+      const postId = parseInt(req.params.id);
+      const reactions = await storage.getPostReactions(postId);
+      res.json(reactions);
+    } catch (error) {
+      console.error("Error fetching post reactions:", error);
+      res.status(500).json({ message: "Failed to fetch reactions" });
+    }
+  });
+
+  app.post("/api/posts/:id/reactions", isAuthenticated, async (req: any, res) => {
+    try {
+      const postId = parseInt(req.params.id);
+      const userId = req.user.claims.sub;
+      const { reactionType } = req.body;
+
+      if (!reactionType || !['like', 'heart', 'laugh', 'sad', 'wow', 'angry'].includes(reactionType)) {
+        return res.status(400).json({ message: "Valid reaction type is required" });
+      }
+
+      const reaction = await storage.addPostReaction({
+        userId,
+        postId,
+        reactionType,
+      });
+
+      res.status(201).json(reaction);
+    } catch (error) {
+      console.error("Error adding post reaction:", error);
+      res.status(500).json({ message: "Failed to add reaction" });
+    }
+  });
+
+  app.delete("/api/posts/:id/reactions", isAuthenticated, async (req: any, res) => {
+    try {
+      const postId = parseInt(req.params.id);
+      const userId = req.user.claims.sub;
+      await storage.removePostReaction(userId, postId);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error removing post reaction:", error);
+      res.status(500).json({ message: "Failed to remove reaction" });
+    }
+  });
+
+  // Post comments routes
+  app.get("/api/posts/:id/comments", async (req, res) => {
+    try {
+      const postId = parseInt(req.params.id);
+      const comments = await storage.getPostComments(postId);
+      res.json(comments);
+    } catch (error) {
+      console.error("Error fetching post comments:", error);
+      res.status(500).json({ message: "Failed to fetch comments" });
+    }
+  });
+
+  app.post("/api/posts/:id/comments", isAuthenticated, async (req: any, res) => {
+    try {
+      const postId = parseInt(req.params.id);
+      const userId = req.user.claims.sub;
+      const { content } = req.body;
+
+      if (!content || content.trim().length === 0) {
+        return res.status(400).json({ message: "Comment content is required" });
+      }
+
+      const comment = await storage.addPostComment({
+        userId,
+        postId,
+        content: content.trim(),
+      });
+
+      res.status(201).json(comment);
+    } catch (error) {
+      console.error("Error adding post comment:", error);
+      res.status(500).json({ message: "Failed to add comment" });
+    }
+  });
+
+  app.delete("/api/comments/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const commentId = parseInt(req.params.id);
+      const userId = req.user.claims.sub;
+      await storage.deletePostComment(commentId, userId);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      res.status(500).json({ message: "Failed to delete comment" });
+    }
+  });
+
   // Media upload endpoint for game posts
   app.post("/api/games/:gameId/upload-media", isAuthenticated, async (req: any, res) => {
     try {

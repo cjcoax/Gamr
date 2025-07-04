@@ -7,6 +7,8 @@ import {
   userFollows,
   gamePosts,
   favoriteGames,
+  postReactions,
+  postComments,
   type User,
   type UpsertUser,
   type Game,
@@ -21,6 +23,10 @@ import {
   type InsertGamePost,
   type FavoriteGame,
   type InsertFavoriteGame,
+  type PostReaction,
+  type InsertPostReaction,
+  type PostComment,
+  type InsertPostComment,
   type GameWithUserData,
   type UserWithStats,
   type ActivityWithDetails,
@@ -93,6 +99,17 @@ export interface IStorage {
   getUserFavoriteGames(userId: string): Promise<(FavoriteGame & { game: Game })[]>;
   setFavoriteGame(userId: string, gameId: number, position: number): Promise<FavoriteGame>;
   removeFavoriteGame(userId: string, position: number): Promise<void>;
+
+  // Post reactions operations
+  getPostReactions(postId: number): Promise<(PostReaction & { user: User })[]>;
+  addPostReaction(reaction: InsertPostReaction): Promise<PostReaction>;
+  removePostReaction(userId: string, postId: number): Promise<void>;
+  getUserPostReaction(userId: string, postId: number): Promise<PostReaction | undefined>;
+
+  // Post comments operations
+  getPostComments(postId: number): Promise<(PostComment & { user: User })[]>;
+  addPostComment(comment: InsertPostComment): Promise<PostComment>;
+  deletePostComment(id: number, userId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -927,6 +944,122 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(favoriteGames)
       .where(and(eq(favoriteGames.userId, userId), eq(favoriteGames.position, position)));
+  }
+
+  // Post reactions operations
+  async getPostReactions(postId: number): Promise<(PostReaction & { user: User })[]> {
+    return db
+      .select({
+        id: postReactions.id,
+        userId: postReactions.userId,
+        postId: postReactions.postId,
+        reactionType: postReactions.reactionType,
+        createdAt: postReactions.createdAt,
+        user: {
+          id: users.id,
+          email: users.email,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          profileImageUrl: users.profileImageUrl,
+          username: users.username,
+          bio: users.bio,
+          steamUsername: users.steamUsername,
+          epicUsername: users.epicUsername,
+          battlenetUsername: users.battlenetUsername,
+          psnUsername: users.psnUsername,
+          xboxUsername: users.xboxUsername,
+          nintendoUsername: users.nintendoUsername,
+          eaUsername: users.eaUsername,
+          discordUsername: users.discordUsername,
+          createdAt: users.createdAt,
+          updatedAt: users.updatedAt,
+        },
+      })
+      .from(postReactions)
+      .innerJoin(users, eq(postReactions.userId, users.id))
+      .where(eq(postReactions.postId, postId))
+      .orderBy(postReactions.createdAt);
+  }
+
+  async addPostReaction(reaction: InsertPostReaction): Promise<PostReaction> {
+    // First remove any existing reaction from this user for this post
+    await db
+      .delete(postReactions)
+      .where(and(eq(postReactions.userId, reaction.userId), eq(postReactions.postId, reaction.postId)));
+
+    // Insert the new reaction
+    const [newReaction] = await db
+      .insert(postReactions)
+      .values(reaction)
+      .returning();
+    
+    return newReaction;
+  }
+
+  async removePostReaction(userId: string, postId: number): Promise<void> {
+    await db
+      .delete(postReactions)
+      .where(and(eq(postReactions.userId, userId), eq(postReactions.postId, postId)));
+  }
+
+  async getUserPostReaction(userId: string, postId: number): Promise<PostReaction | undefined> {
+    const [reaction] = await db
+      .select()
+      .from(postReactions)
+      .where(and(eq(postReactions.userId, userId), eq(postReactions.postId, postId)))
+      .limit(1);
+    
+    return reaction;
+  }
+
+  // Post comments operations
+  async getPostComments(postId: number): Promise<(PostComment & { user: User })[]> {
+    return db
+      .select({
+        id: postComments.id,
+        userId: postComments.userId,
+        postId: postComments.postId,
+        content: postComments.content,
+        createdAt: postComments.createdAt,
+        user: {
+          id: users.id,
+          email: users.email,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          profileImageUrl: users.profileImageUrl,
+          username: users.username,
+          bio: users.bio,
+          steamUsername: users.steamUsername,
+          epicUsername: users.epicUsername,
+          battlenetUsername: users.battlenetUsername,
+          psnUsername: users.psnUsername,
+          xboxUsername: users.xboxUsername,
+          nintendoUsername: users.nintendoUsername,
+          eaUsername: users.eaUsername,
+          discordUsername: users.discordUsername,
+          createdAt: users.createdAt,
+          updatedAt: users.updatedAt,
+        },
+      })
+      .from(postComments)
+      .innerJoin(users, eq(postComments.userId, users.id))
+      .where(eq(postComments.postId, postId))
+      .orderBy(postComments.createdAt);
+  }
+
+  async addPostComment(comment: InsertPostComment): Promise<PostComment> {
+    const [newComment] = await db
+      .insert(postComments)
+      .values(comment)
+      .returning();
+    
+    return newComment;
+  }
+
+  async deletePostComment(id: number, userId: string): Promise<void> {
+    await db
+      .delete(postComments)
+      .where(and(eq(postComments.id, id), eq(postComments.userId, userId)));
   }
 }
 

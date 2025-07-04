@@ -16,6 +16,8 @@ import { useToast } from "@/hooks/use-toast";
 import PhotoUploadDialog from "@/components/PhotoUploadDialog";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import BottomNavigation from "@/components/BottomNavigation";
+import PostInteractions from "@/components/PostInteractions";
+import ImageModal from "@/components/ImageModal";
 import type { GameWithUserData, Review } from "@shared/schema";
 
 export default function GameDetail() {
@@ -529,12 +531,18 @@ export default function GameDetail() {
                       <h3 className="text-sm font-medium text-slate-400 mb-3">Screenshots</h3>
                       <div className="grid grid-cols-2 gap-2">
                         {gameData.screenshotUrls.map((url: string, index: number) => (
-                          <img
+                          <ImageModal
                             key={index}
                             src={url}
                             alt={`${gameData.title} screenshot ${index + 1}`}
-                            className="w-full h-24 object-cover rounded border border-slate-600"
-                          />
+                            className="w-full h-24"
+                          >
+                            <img
+                              src={url}
+                              alt={`${gameData.title} screenshot ${index + 1}`}
+                              className="w-full h-24 object-cover rounded border border-slate-600"
+                            />
+                          </ImageModal>
                         ))}
                       </div>
                     </CardContent>
@@ -648,11 +656,17 @@ export default function GameDetail() {
                         <div className="grid grid-cols-2 gap-3">
                           {mediaItems.map((media: any) => (
                             <div key={media.id} className="space-y-2">
-                              <img
+                              <ImageModal
                                 src={media.imageUrl}
                                 alt={`${media.type === 'review' ? 'Review' : 'Screenshot'} by ${media.user?.username || "User"}`}
-                                className="w-full h-24 object-cover rounded border border-slate-600"
-                              />
+                                className="w-full h-24"
+                              >
+                                <img
+                                  src={media.imageUrl}
+                                  alt={`${media.type === 'review' ? 'Review' : 'Screenshot'} by ${media.user?.username || "User"}`}
+                                  className="w-full h-24 object-cover rounded border border-slate-600"
+                                />
+                              </ImageModal>
                               <div className="flex items-center space-x-2">
                                 <img
                                   src={media.user?.profileImageUrl || "https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=20&h=20&fit=crop&crop=face"}
@@ -757,6 +771,11 @@ export default function GameDetail() {
                                     </span>
                                   </div>
                                   <p className="text-sm text-slate-300">{post.content}</p>
+                                  
+                                  {/* Post Interactions */}
+                                  <div className="mt-3">
+                                    <PostInteractions postId={post.id} />
+                                  </div>
                                 </div>
                               </div>
                             </div>
