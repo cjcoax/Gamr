@@ -740,6 +740,123 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User search and profile routes
+  app.get("/api/users/search", isAuthenticated, async (req, res) => {
+    try {
+      const { q, limit = 20 } = req.query;
+      
+      if (!q || typeof q !== 'string') {
+        return res.status(400).json({ message: "Search query is required" });
+      }
+
+      const users = await storage.searchUsers(q, parseInt(limit as string));
+      res.json(users);
+    } catch (error) {
+      console.error("Error searching users:", error);
+      res.status(500).json({ message: "Failed to search users" });
+    }
+  });
+
+  app.get("/api/users/:userId", isAuthenticated, async (req: any, res) => {
+    try {
+      const { userId } = req.params;
+      const currentUserId = req.user.claims.sub;
+      
+      const user = await storage.getUserWithStats(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Check if current user is following this user
+      const isFollowing = await storage.isFollowing(currentUserId, userId);
+      
+      res.json({ ...user, isFollowing });
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Following/followers routes
+  app.post("/api/users/:userId/follow", isAuthenticated, async (req: any, res) => {
+    try {
+      const { userId } = req.params;
+      const followerId = req.user.claims.sub;
+      
+      if (followerId === userId) {
+        return res.status(400).json({ message: "Cannot follow yourself" });
+      }
+
+      // Check if already following
+      const alreadyFollowing = await storage.isFollowing(followerId, userId);
+      if (alreadyFollowing) {
+        return res.status(400).json({ message: "Already following this user" });
+      }
+
+      await storage.followUser(followerId, userId);
+      
+      // Create activity
+      await storage.createActivity({
+        userId: followerId,
+        type: "followed_user",
+        metadata: { followedUserId: userId },
+      });
+
+      res.json({ message: "Successfully followed user" });
+    } catch (error) {
+      console.error("Error following user:", error);
+      res.status(500).json({ message: "Failed to follow user" });
+    }
+  });
+
+  app.delete("/api/users/:userId/follow", isAuthenticated, async (req: any, res) => {
+    try {
+      const { userId } = req.params;
+      const followerId = req.user.claims.sub;
+
+      await storage.unfollowUser(followerId, userId);
+      res.json({ message: "Successfully unfollowed user" });
+    } catch (error) {
+      console.error("Error unfollowing user:", error);
+      res.status(500).json({ message: "Failed to unfollow user" });
+    }
+  });
+
+  app.get("/api/users/:userId/followers", isAuthenticated, async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const followers = await storage.getUserFollowers(userId);
+      res.json(followers);
+    } catch (error) {
+      console.error("Error fetching followers:", error);
+      res.status(500).json({ message: "Failed to fetch followers" });
+    }
+  });
+
+  app.get("/api/users/:userId/following", isAuthenticated, async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const following = await storage.getUserFollowing(userId);
+      res.json(following);
+    } catch (error) {
+      console.error("Error fetching following:", error);
+      res.status(500).json({ message: "Failed to fetch following" });
+    }
+  });
+
+  app.get("/api/users/:userId/library", isAuthenticated, async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { status } = req.query;
+      
+      const userGames = await storage.getUserGames(userId, status as string);
+      res.json(userGames);
+    } catch (error) {
+      console.error("Error fetching user library:", error);
+      res.status(500).json({ message: "Failed to fetch user library" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

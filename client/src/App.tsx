@@ -11,6 +11,7 @@ import Search from "@/pages/Search";
 import Library from "@/pages/Library";
 import Discover from "@/pages/Discover";
 import Profile from "@/pages/Profile";
+import UserProfile from "@/pages/UserProfile";
 import GameDetail from "@/pages/GameDetail";
 
 function Router() {
@@ -30,6 +31,7 @@ function Router() {
           <Route path="/library" component={Library} />
           <Route path="/discover" component={Discover} />
           <Route path="/profile" component={Profile} />
+          <Route path="/users/:id" component={UserProfile} />
           <Route path="/games/:id" component={GameDetail} />
         </>
       )}

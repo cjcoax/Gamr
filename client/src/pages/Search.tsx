@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import BottomNavigation from "@/components/BottomNavigation";
 import SearchForm from "@/components/SearchForm";
 import GameCard from "@/components/GameCard";
+import UserCard from "@/components/UserCard";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, User, Gamepad2 } from "lucide-react";
@@ -137,38 +138,7 @@ export default function Search() {
                 ) : userResults && userResults.length > 0 ? (
                   <div className="space-y-3">
                     {userResults.map((user: UserType) => (
-                      <div 
-                        key={user.id} 
-                        className="bg-slate-800/50 rounded-lg p-4 border border-slate-700/50 hover:bg-slate-800/70 transition-colors cursor-pointer"
-                        onClick={() => setLocation(`/profile/${user.id}`)}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center overflow-hidden">
-                            {user.profileImageUrl ? (
-                              <img 
-                                src={user.profileImageUrl} 
-                                alt={user.firstName || user.username || 'User'} 
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <User className="w-6 h-6 text-white" />
-                            )}
-                          </div>
-                          <div className="flex-1">
-                            <h3 className="font-semibold text-white">
-                              {user.firstName && user.lastName 
-                                ? `${user.firstName} ${user.lastName}` 
-                                : user.username || 'Gamr User'}
-                            </h3>
-                            {user.username && (
-                              <p className="text-slate-400 text-sm">@{user.username}</p>
-                            )}
-                            {user.bio && (
-                              <p className="text-slate-300 text-sm mt-1 line-clamp-2">{user.bio}</p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
+                      <UserCard key={user.id} user={user} />
                     ))}
                   </div>
                 ) : userResults && userResults.length === 0 ? (
