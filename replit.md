@@ -123,6 +123,7 @@ Changelog:
 - July 03, 2025. Updated GTA VI from manual entry to authentic IGDB data with proper metadata
 - July 03, 2025. Enhanced Search tab with context-aware help text - different placeholders and empty state messages for Games vs Users tabs
 - July 03, 2025. Added 8 additional games for testing: V Rising, Marvel Rivals, Hunt: Showdown 1896, Luma Island, Two Point Museum, Bloons TD 6, Dune: Awakening, and Conan Exiles
+- July 04, 2025. Fixed critical "Playing" status bug - database stores "playing" but statistics queries were looking for "currently_playing", causing 0 count in profile stats. Updated all components to use consistent "playing" status throughout the application
 ```
 
 ## User Preferences

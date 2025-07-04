@@ -27,13 +27,13 @@ export default function Library() {
   }) || [];
 
   const getStatusCounts = () => {
-    if (!userGames) return { all: 0, want_to_play: 0, currently_playing: 0, completed: 0, dnf: 0 };
+    if (!userGames) return { all: 0, want_to_play: 0, playing: 0, completed: 0, dnf: 0 };
     
     return userGames.reduce((acc: any, userGame: UserGameWithGame) => {
       acc.all++;
       acc[userGame.status] = (acc[userGame.status] || 0) + 1;
       return acc;
-    }, { all: 0, want_to_play: 0, currently_playing: 0, completed: 0, dnf: 0 });
+    }, { all: 0, want_to_play: 0, playing: 0, completed: 0, dnf: 0 });
   };
 
   const statusCounts = getStatusCounts();
@@ -65,8 +65,8 @@ export default function Library() {
             <TabsTrigger value="want_to_play" className="text-xs">
               Want ({statusCounts.want_to_play})
             </TabsTrigger>
-            <TabsTrigger value="currently_playing" className="text-xs">
-              Playing ({statusCounts.currently_playing})
+            <TabsTrigger value="playing" className="text-xs">
+              Playing ({statusCounts.playing})
             </TabsTrigger>
             <TabsTrigger value="completed" className="text-xs">
               Done ({statusCounts.completed})

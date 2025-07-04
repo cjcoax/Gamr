@@ -141,7 +141,7 @@ export class DatabaseStorage implements IStorage {
     const [statsResult] = await db
       .select({
         gamesCompleted: sql<number>`count(case when ${userGames.status} = 'completed' then 1 end)`,
-        gamesPlaying: sql<number>`count(case when ${userGames.status} = 'currently_playing' then 1 end)`,
+        gamesPlaying: sql<number>`count(case when ${userGames.status} = 'playing' then 1 end)`,
         gamesWantToPlay: sql<number>`count(case when ${userGames.status} = 'want_to_play' then 1 end)`,
         gamesDNF: sql<number>`count(case when ${userGames.status} = 'dnf' then 1 end)`,
         totalHoursPlayed: sql<number>`coalesce(sum(${userGames.hoursPlayed}), 0)`,

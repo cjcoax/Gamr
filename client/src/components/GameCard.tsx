@@ -61,7 +61,7 @@ export default function GameCard({ game, userGame, showProgress }: GameCardProps
                 <Badge 
                   variant={
                     userGame.status === "completed" ? "default" :
-                    userGame.status === "currently_playing" ? "secondary" :
+                    userGame.status === "playing" ? "secondary" :
                     userGame.status === "dnf" ? "destructive" :
                     "outline"
                   }

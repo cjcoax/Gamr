@@ -326,7 +326,7 @@ export default function GameDetail() {
                   Want to Play
                 </Button>
                 <Button
-                  onClick={() => addToLibraryMutation.mutate("currently_playing")}
+                  onClick={() => addToLibraryMutation.mutate("playing")}
                   disabled={addToLibraryMutation.isPending}
                   className="bg-gaming-purple hover:bg-gaming-violet text-white text-xs"
                 >
