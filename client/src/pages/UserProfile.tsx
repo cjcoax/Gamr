@@ -49,7 +49,7 @@ export default function UserProfile() {
   const followMutation = useMutation({
     mutationFn: async () => {
       console.log('Attempting to follow user:', userId);
-      const result = await apiRequest(`/api/users/${userId}/follow`, 'POST');
+      const result = await apiRequest('POST', `/api/users/${userId}/follow`);
       console.log('Follow result:', result);
       return result;
     },
@@ -83,7 +83,7 @@ export default function UserProfile() {
 
   const unfollowMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest(`/api/users/${userId}/follow`, 'DELETE');
+      await apiRequest('DELETE', `/api/users/${userId}/follow`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/users", userId] });
