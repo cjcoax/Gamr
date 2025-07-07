@@ -679,7 +679,8 @@ export class DatabaseStorage implements IStorage {
         "Two Point Museum",
         "Bloons TD 6",
         "Dune: Awakening",
-        "Conan Exiles"
+        "Conan Exiles",
+        "Mario Kart World"
       ];
 
       for (const gameTitle of gamesToAdd) {
