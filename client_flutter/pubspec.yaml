@@ -1,0 +1,13 @@
+name: gamr_client
+description: Gamr mobile client in Flutter
+publish_to: 'none'
+version: 0.1.0
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+
+flutter:
+  uses-material-design: true
